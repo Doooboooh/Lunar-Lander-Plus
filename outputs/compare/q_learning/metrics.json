@@ -1,0 +1,21 @@
+{
+  "algorithm": "Q-Learning",
+  "config": {
+    "episodes": 5,
+    "max_steps": 1000,
+    "lr": 0.08,
+    "gamma": 0.99,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay": 0.995,
+    "seed": 42,
+    "eval_episodes": 2,
+    "output_dir": "outputs/compare/q_learning"
+  },
+  "metrics": {
+    "mean_return": -130.95536527353136,
+    "std_return": 41.31549450885979,
+    "min_return": -172.27085978239114,
+    "max_return": -89.63987076467156
+  }
+}
