@@ -11,7 +11,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from .common import ensure_dir, evaluate_policy, get_device, make_env, mlp, save_history, save_json, set_seed
+from .common import EnvFactory, ensure_dir, evaluate_policy, get_device, make_env, mlp, save_history, save_json, set_seed
 
 
 Transition = namedtuple("Transition", ["state", "action", "reward", "next_state", "done"])
@@ -61,11 +61,15 @@ def epsilon_by_step(step: int, cfg: DQNConfig) -> float:
     return cfg.epsilon_end + (cfg.epsilon_start - cfg.epsilon_end) * math.exp(-step / cfg.epsilon_decay_steps)
 
 
-def train(cfg: DQNConfig) -> dict[str, float]:
+def train(
+    cfg: DQNConfig,
+    env_factory: EnvFactory = make_env,
+    eval_env_factory: EnvFactory | None = None,
+) -> dict[str, float]:
     set_seed(cfg.seed)
     device = get_device(cfg.device)
     output_dir = ensure_dir(cfg.output_dir)
-    env = make_env(seed=cfg.seed)
+    env = env_factory(seed=cfg.seed)
     obs_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
@@ -147,7 +151,7 @@ def train(cfg: DQNConfig) -> dict[str, float]:
             obs_tensor = torch.tensor(obs, dtype=torch.float32, device=device).unsqueeze(0)
             return int(policy(obs_tensor).argmax(dim=1).item())
 
-    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000)
+    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000, env_factory=eval_env_factory or env_factory)
     save_history(history, output_dir)
     save_json({"algorithm": "DQN", "config": cfg, "metrics": metrics}, output_dir / "metrics.json")
     print(f"[DQN] eval mean return: {metrics['mean_return']:.1f}")

@@ -1,0 +1,22 @@
+{
+  "algorithm": "Actor-Critic",
+  "config": {
+    "episodes": 4,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.001,
+    "gamma": 0.99,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 1,
+    "device": "auto",
+    "output_dir": "outputs/trajectory_custom_smoke/drawn_diamond_ac/actor_critic"
+  },
+  "metrics": {
+    "mean_return": -241.86591323551625,
+    "std_return": 0.0,
+    "min_return": -241.86591323551625,
+    "max_return": -241.86591323551625
+  }
+}

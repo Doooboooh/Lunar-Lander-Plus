@@ -1,0 +1,22 @@
+{
+  "algorithm": "Actor-Critic",
+  "config": {
+    "episodes": 40,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.001,
+    "gamma": 0.99,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 3,
+    "device": "auto",
+    "output_dir": "outputs/trajectory_suite_probe/single_left/actor_critic/seed_42"
+  },
+  "metrics": {
+    "mean_return": -275.9118925595798,
+    "std_return": 25.860391174090424,
+    "min_return": -303.1165141855582,
+    "max_return": -241.1418901115546
+  }
+}

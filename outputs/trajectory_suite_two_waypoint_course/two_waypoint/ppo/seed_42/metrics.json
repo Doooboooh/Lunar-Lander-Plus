@@ -1,0 +1,27 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 40,
+    "rollout_steps": 512,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 128,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/trajectory_suite_two_waypoint_course/two_waypoint/ppo/seed_42"
+  },
+  "metrics": {
+    "mean_return": -355.62054315559044,
+    "std_return": 107.42347194786497,
+    "min_return": -562.6207985808433,
+    "max_return": -264.4538611098651
+  }
+}

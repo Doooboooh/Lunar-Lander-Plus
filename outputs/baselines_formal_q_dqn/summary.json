@@ -1,0 +1,76 @@
+{
+  "runs": [
+    {
+      "algorithm": "q_learning",
+      "seed": 42,
+      "profile": "formal",
+      "output_dir": "outputs/baselines_formal_q_dqn/q_learning/seed_42",
+      "config": {
+        "episodes": 400,
+        "max_steps": 1000,
+        "lr": 0.08,
+        "gamma": 0.99,
+        "epsilon_start": 1.0,
+        "epsilon_end": 0.05,
+        "epsilon_decay": 0.995,
+        "seed": 42,
+        "eval_episodes": 5,
+        "output_dir": "outputs/baselines_formal_q_dqn/q_learning/seed_42"
+      },
+      "metrics": {
+        "mean_return": -131.02058293637978,
+        "std_return": 138.8043583465252,
+        "min_return": -320.3256060503481,
+        "max_return": 40.551440851210174
+      }
+    },
+    {
+      "algorithm": "dqn",
+      "seed": 42,
+      "profile": "formal",
+      "output_dir": "outputs/baselines_formal_q_dqn/dqn/seed_42",
+      "config": {
+        "episodes": 400,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.001,
+        "gamma": 0.99,
+        "batch_size": 64,
+        "replay_size": 100000,
+        "warmup_steps": 1000,
+        "target_update": 1000,
+        "epsilon_start": 1.0,
+        "epsilon_end": 0.05,
+        "epsilon_decay_steps": 30000,
+        "seed": 42,
+        "eval_episodes": 5,
+        "device": "auto",
+        "output_dir": "outputs/baselines_formal_q_dqn/dqn/seed_42"
+      },
+      "metrics": {
+        "mean_return": 118.18787091470809,
+        "std_return": 134.83473629772325,
+        "min_return": -48.32240588331021,
+        "max_return": 270.0724265879361
+      }
+    }
+  ],
+  "summary": {
+    "q_learning": {
+      "runs": 1,
+      "mean_of_mean_return": -131.02058293637978,
+      "std_of_mean_return": 0.0,
+      "mean_eval_std_return": 138.8043583465252,
+      "best_mean_return": -131.02058293637978,
+      "worst_mean_return": -131.02058293637978
+    },
+    "dqn": {
+      "runs": 1,
+      "mean_of_mean_return": 118.18787091470809,
+      "std_of_mean_return": 0.0,
+      "mean_eval_std_return": 134.83473629772325,
+      "best_mean_return": 118.18787091470809,
+      "worst_mean_return": 118.18787091470809
+    }
+  }
+}

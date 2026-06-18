@@ -1,0 +1,27 @@
+{
+  "algorithm": "DQN",
+  "config": {
+    "episodes": 120,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.001,
+    "gamma": 0.99,
+    "batch_size": 64,
+    "replay_size": 100000,
+    "warmup_steps": 500,
+    "target_update": 500,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay_steps": 30000,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/trajectory_suite_two_waypoint_course/two_waypoint/dqn/seed_42"
+  },
+  "metrics": {
+    "mean_return": -178.91520287576185,
+    "std_return": 15.563709847907537,
+    "min_return": -189.71520877180626,
+    "max_return": -147.96464578438793
+  }
+}

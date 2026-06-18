@@ -1,0 +1,232 @@
+{
+  "timestamp": "2026-06-18T09:26:11.847158+00:00",
+  "label": "iter_012",
+  "seed": 30000,
+  "episodes": 10,
+  "radius": 0.16,
+  "max_steps": 1000,
+  "expert_config": {
+    "waypoint_angle_limit": 0.55,
+    "waypoint_max_vx": 1.08,
+    "waypoint_max_vy_up": 0.55,
+    "waypoint_max_vy_down": 0.5,
+    "waypoint_kx": 1.35,
+    "waypoint_kvx": 1.0,
+    "waypoint_ky": 0.85,
+    "waypoint_kvy": 1.2,
+    "waypoint_angle_gain": 0.55,
+    "waypoint_angvel_gain": 1.0,
+    "waypoint_main_threshold": 0.08,
+    "waypoint_side_threshold": 0.045,
+    "waypoint_slow_radius": 0.26,
+    "waypoint_close_vx": 0.35,
+    "waypoint_close_vy": 0.28,
+    "waypoint_arrival_radius": 0.16,
+    "waypoint_lookahead_radius": 0.24,
+    "waypoint_lookahead_speed": 0.08,
+    "final_waypoint_slow_radius": 0.26,
+    "final_waypoint_close_vx": 0.35,
+    "final_waypoint_close_vy": 0.28,
+    "landing_angle_limit": 0.4,
+    "landing_x_gain": 0.5,
+    "landing_vx_gain": 1.0,
+    "landing_y_x_gain": 0.55,
+    "landing_y_gain": 0.5,
+    "landing_vy_gain": 0.5,
+    "landing_side_threshold": 0.05,
+    "landing_main_threshold": 0.05,
+    "route_landing_altitude": 0.42,
+    "route_landing_x_altitude_gain": 0.42,
+    "route_landing_vx_altitude_gain": 0.2
+  },
+  "base_landing": {
+    "mean_return": 274.4391500367402,
+    "std_return": 33.41110448473266,
+    "min_return": 185.6678029031401,
+    "max_return": 306.3871930255264
+  },
+  "trajectory_runs": [
+    {
+      "task_label": "two_waypoint",
+      "route_name": "two_waypoint",
+      "custom_waypoints": null,
+      "waypoints": [
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.55,
+          1.05
+        ]
+      ],
+      "metrics": {
+        "episodes": 10.0,
+        "mean_return": 235.86934677978775,
+        "std_return": 42.380341848122,
+        "min_return": 123.60815327052822,
+        "max_return": 273.30521476713756,
+        "mean_waypoints_completed": 2.0,
+        "max_waypoints_completed": 2.0,
+        "route_completion_rate": 1.0,
+        "landed_after_route_rate": 0.0,
+        "touchdown_after_route_rate": 0.0,
+        "settled_after_route_rate": 0.0,
+        "mean_final_target_distance": 0.4451466202735901,
+        "mean_episode_length": 927.8,
+        "waypoint_count": 2.0
+      }
+    },
+    {
+      "task_label": "orbit",
+      "route_name": "orbit",
+      "custom_waypoints": null,
+      "waypoints": [
+        [
+          -0.55,
+          0.95
+        ],
+        [
+          0.0,
+          1.35
+        ],
+        [
+          0.55,
+          0.95
+        ],
+        [
+          0.0,
+          0.65
+        ]
+      ],
+      "metrics": {
+        "episodes": 10.0,
+        "mean_return": 278.1196466782295,
+        "std_return": 25.8126777868089,
+        "min_return": 237.48946647809558,
+        "max_return": 312.98184067651067,
+        "mean_waypoints_completed": 4.0,
+        "max_waypoints_completed": 4.0,
+        "route_completion_rate": 1.0,
+        "landed_after_route_rate": 0.0,
+        "touchdown_after_route_rate": 0.0,
+        "settled_after_route_rate": 0.0,
+        "mean_final_target_distance": 0.34912649393081663,
+        "mean_episode_length": 1000.0,
+        "waypoint_count": 4.0
+      }
+    },
+    {
+      "task_label": "figure_eight",
+      "route_name": "figure_eight",
+      "custom_waypoints": null,
+      "waypoints": [
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ],
+        [
+          0.55,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ],
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ],
+        [
+          0.55,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ]
+      ],
+      "metrics": {
+        "episodes": 10.0,
+        "mean_return": 559.8682907409841,
+        "std_return": 27.18719006547718,
+        "min_return": 507.4667019865006,
+        "max_return": 597.3174396588391,
+        "mean_waypoints_completed": 8.0,
+        "max_waypoints_completed": 8.0,
+        "route_completion_rate": 1.0,
+        "landed_after_route_rate": 0.0,
+        "touchdown_after_route_rate": 0.0,
+        "settled_after_route_rate": 0.0,
+        "mean_final_target_distance": 0.44632846415042876,
+        "mean_episode_length": 1000.0,
+        "waypoint_count": 8.0
+      }
+    },
+    {
+      "task_label": "drawn_diamond",
+      "route_name": "custom",
+      "custom_waypoints": [
+        [
+          -0.45,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ],
+        [
+          0.45,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ]
+      ],
+      "waypoints": [
+        [
+          -0.45,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ],
+        [
+          0.45,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ]
+      ],
+      "metrics": {
+        "episodes": 10.0,
+        "mean_return": 290.1780553610875,
+        "std_return": 21.48981048039981,
+        "min_return": 251.14349957625714,
+        "max_return": 315.0408038156034,
+        "mean_waypoints_completed": 4.0,
+        "max_waypoints_completed": 4.0,
+        "route_completion_rate": 1.0,
+        "landed_after_route_rate": 0.0,
+        "touchdown_after_route_rate": 0.0,
+        "settled_after_route_rate": 0.0,
+        "mean_final_target_distance": 0.3461515635251999,
+        "mean_episode_length": 1000.0,
+        "waypoint_count": 4.0
+      }
+    }
+  ],
+  "notes": "cautious post-route return before descent"
+}

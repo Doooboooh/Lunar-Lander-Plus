@@ -1,0 +1,292 @@
+{
+  "profile": "probe",
+  "seed": 42,
+  "radius": 0.3,
+  "reward_config": {
+    "progress_reward": 20.0,
+    "waypoint_bonus": 120.0,
+    "route_bonus": 240.0,
+    "early_landing_penalty": 200.0,
+    "landing_after_route_bonus": 40.0,
+    "base_reward_scale_before_route": 0.0,
+    "base_reward_scale_after_route": 1.0
+  },
+  "runs": [
+    {
+      "task_label": "two_waypoint",
+      "route_name": "two_waypoint",
+      "custom_waypoints": null,
+      "waypoints": [
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.55,
+          1.05
+        ]
+      ],
+      "algorithm": "dqn",
+      "profile": "probe",
+      "seed": 42,
+      "output_dir": "outputs/trajectory_suite_relaxed_probe/two_waypoint/dqn/seed_42",
+      "config": {
+        "episodes": 40,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.001,
+        "gamma": 0.99,
+        "batch_size": 32,
+        "replay_size": 100000,
+        "warmup_steps": 128,
+        "target_update": 250,
+        "epsilon_start": 1.0,
+        "epsilon_end": 0.05,
+        "epsilon_decay_steps": 30000,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/trajectory_suite_relaxed_probe/two_waypoint/dqn/seed_42"
+      },
+      "reward_metrics": {
+        "mean_return": -124.39133008321126,
+        "std_return": 60.92549400843576,
+        "min_return": -210.5367660522461,
+        "max_return": -79.87063884735107
+      },
+      "trajectory_metrics": {
+        "episodes": 3.0,
+        "mean_return": -233.42555165290833,
+        "std_return": 27.168360191836953,
+        "min_return": -270.9026300907135,
+        "max_return": -207.35345005989075,
+        "mean_waypoints_completed": 0.0,
+        "max_waypoints_completed": 0.0,
+        "route_completion_rate": 0.0,
+        "landed_after_route_rate": 0.0,
+        "mean_final_target_distance": 2.327143987019857,
+        "mean_episode_length": 97.33333333333333,
+        "waypoint_count": 2.0
+      }
+    },
+    {
+      "task_label": "two_waypoint",
+      "route_name": "two_waypoint",
+      "custom_waypoints": null,
+      "waypoints": [
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.55,
+          1.05
+        ]
+      ],
+      "algorithm": "ppo",
+      "profile": "probe",
+      "seed": 42,
+      "output_dir": "outputs/trajectory_suite_relaxed_probe/two_waypoint/ppo/seed_42",
+      "config": {
+        "updates": 8,
+        "rollout_steps": 256,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 64,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/trajectory_suite_relaxed_probe/two_waypoint/ppo/seed_42"
+      },
+      "reward_metrics": {
+        "mean_return": -210.30667662620544,
+        "std_return": 0.538004952173573,
+        "min_return": -211.06128454208374,
+        "max_return": -209.84511613845825
+      },
+      "trajectory_metrics": {
+        "episodes": 3.0,
+        "mean_return": -169.36939477920532,
+        "std_return": 56.88799264052098,
+        "min_return": -212.3844563961029,
+        "max_return": -88.98365139961243,
+        "mean_waypoints_completed": 0.3333333333333333,
+        "max_waypoints_completed": 1.0,
+        "route_completion_rate": 0.0,
+        "landed_after_route_rate": 0.0,
+        "mean_final_target_distance": 1.303383966286977,
+        "mean_episode_length": 72.0,
+        "waypoint_count": 2.0
+      }
+    },
+    {
+      "task_label": "figure_eight",
+      "route_name": "figure_eight",
+      "custom_waypoints": null,
+      "waypoints": [
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ],
+        [
+          0.55,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ],
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ],
+        [
+          0.55,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ]
+      ],
+      "algorithm": "dqn",
+      "profile": "probe",
+      "seed": 42,
+      "output_dir": "outputs/trajectory_suite_relaxed_probe/figure_eight/dqn/seed_42",
+      "config": {
+        "episodes": 40,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.001,
+        "gamma": 0.99,
+        "batch_size": 32,
+        "replay_size": 100000,
+        "warmup_steps": 128,
+        "target_update": 250,
+        "epsilon_start": 1.0,
+        "epsilon_end": 0.05,
+        "epsilon_decay_steps": 30000,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/trajectory_suite_relaxed_probe/figure_eight/dqn/seed_42"
+      },
+      "reward_metrics": {
+        "mean_return": -130.3969399134318,
+        "std_return": 56.76975677815467,
+        "min_return": -210.5367660522461,
+        "max_return": -86.15400314331055
+      },
+      "trajectory_metrics": {
+        "episodes": 3.0,
+        "mean_return": -214.49326157569885,
+        "std_return": 5.055288834668046,
+        "min_return": -218.3813440799713,
+        "max_return": -207.35345005989075,
+        "mean_waypoints_completed": 0.0,
+        "max_waypoints_completed": 0.0,
+        "route_completion_rate": 0.0,
+        "landed_after_route_rate": 0.0,
+        "mean_final_target_distance": 1.380529483159383,
+        "mean_episode_length": 108.0,
+        "waypoint_count": 8.0
+      }
+    },
+    {
+      "task_label": "figure_eight",
+      "route_name": "figure_eight",
+      "custom_waypoints": null,
+      "waypoints": [
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ],
+        [
+          0.55,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ],
+        [
+          -0.55,
+          1.05
+        ],
+        [
+          0.0,
+          0.8
+        ],
+        [
+          0.55,
+          1.05
+        ],
+        [
+          0.0,
+          1.3
+        ]
+      ],
+      "algorithm": "ppo",
+      "profile": "probe",
+      "seed": 42,
+      "output_dir": "outputs/trajectory_suite_relaxed_probe/figure_eight/ppo/seed_42",
+      "config": {
+        "updates": 8,
+        "rollout_steps": 256,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 64,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/trajectory_suite_relaxed_probe/figure_eight/ppo/seed_42"
+      },
+      "reward_metrics": {
+        "mean_return": -210.30667662620544,
+        "std_return": 0.538004952173573,
+        "min_return": -211.06128454208374,
+        "max_return": -209.84511613845825
+      },
+      "trajectory_metrics": {
+        "episodes": 3.0,
+        "mean_return": -172.25879391034445,
+        "std_return": 52.80537820328615,
+        "min_return": -212.3844563961029,
+        "max_return": -97.65184879302979,
+        "mean_waypoints_completed": 0.3333333333333333,
+        "max_waypoints_completed": 1.0,
+        "route_completion_rate": 0.0,
+        "landed_after_route_rate": 0.0,
+        "mean_final_target_distance": 1.2733257412910461,
+        "mean_episode_length": 72.0,
+        "waypoint_count": 8.0
+      }
+    }
+  ]
+}

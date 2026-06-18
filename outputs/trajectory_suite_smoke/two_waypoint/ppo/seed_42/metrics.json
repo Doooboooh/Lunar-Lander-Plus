@@ -1,0 +1,27 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 1,
+    "rollout_steps": 96,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 32,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 1,
+    "device": "auto",
+    "output_dir": "outputs/trajectory_suite_smoke/two_waypoint/ppo/seed_42"
+  },
+  "metrics": {
+    "mean_return": -182.35612052408626,
+    "std_return": 0.0,
+    "min_return": -182.35612052408626,
+    "max_return": -182.35612052408626
+  }
+}

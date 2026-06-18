@@ -1,0 +1,21 @@
+{
+  "algorithm": "Q-Learning",
+  "config": {
+    "episodes": 120,
+    "max_steps": 1000,
+    "lr": 0.08,
+    "gamma": 0.99,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay": 0.995,
+    "seed": 42,
+    "eval_episodes": 5,
+    "output_dir": "outputs/baselines_course/q_learning/seed_42"
+  },
+  "metrics": {
+    "mean_return": -290.9690299355026,
+    "std_return": 125.6321176321609,
+    "min_return": -443.23155250083795,
+    "max_return": -135.17325559427564
+  }
+}

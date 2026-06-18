@@ -1,0 +1,147 @@
+{
+  "runs": [
+    {
+      "algorithm": "q_learning",
+      "seed": 42,
+      "profile": "smoke",
+      "output_dir": "outputs/baselines_smoke/q_learning/seed_42",
+      "config": {
+        "episodes": 5,
+        "max_steps": 1000,
+        "lr": 0.08,
+        "gamma": 0.99,
+        "epsilon_start": 1.0,
+        "epsilon_end": 0.05,
+        "epsilon_decay": 0.995,
+        "seed": 42,
+        "eval_episodes": 2,
+        "output_dir": "outputs/baselines_smoke/q_learning/seed_42"
+      },
+      "metrics": {
+        "mean_return": -130.95536527353136,
+        "std_return": 41.31549450885979,
+        "min_return": -172.27085978239114,
+        "max_return": -89.63987076467156
+      }
+    },
+    {
+      "algorithm": "dqn",
+      "seed": 42,
+      "profile": "smoke",
+      "output_dir": "outputs/baselines_smoke/dqn/seed_42",
+      "config": {
+        "episodes": 5,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.001,
+        "gamma": 0.99,
+        "batch_size": 32,
+        "replay_size": 100000,
+        "warmup_steps": 64,
+        "target_update": 1000,
+        "epsilon_start": 1.0,
+        "epsilon_end": 0.05,
+        "epsilon_decay_steps": 30000,
+        "seed": 42,
+        "eval_episodes": 2,
+        "device": "auto",
+        "output_dir": "outputs/baselines_smoke/dqn/seed_42"
+      },
+      "metrics": {
+        "mean_return": -254.8964278389759,
+        "std_return": 97.97259985781817,
+        "min_return": -352.8690276967941,
+        "max_return": -156.92382798115776
+      }
+    },
+    {
+      "algorithm": "ppo",
+      "seed": 42,
+      "profile": "smoke",
+      "output_dir": "outputs/baselines_smoke/ppo/seed_42",
+      "config": {
+        "updates": 2,
+        "rollout_steps": 128,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 64,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "seed": 42,
+        "eval_episodes": 2,
+        "device": "auto",
+        "output_dir": "outputs/baselines_smoke/ppo/seed_42"
+      },
+      "metrics": {
+        "mean_return": -261.93062738319077,
+        "std_return": 12.590297648196497,
+        "min_return": -274.52092503138726,
+        "max_return": -249.34032973499427
+      }
+    },
+    {
+      "algorithm": "actor_critic",
+      "seed": 42,
+      "profile": "smoke",
+      "output_dir": "outputs/baselines_smoke/actor_critic/seed_42",
+      "config": {
+        "episodes": 5,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.001,
+        "gamma": 0.99,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "seed": 42,
+        "eval_episodes": 2,
+        "device": "auto",
+        "output_dir": "outputs/baselines_smoke/actor_critic/seed_42"
+      },
+      "metrics": {
+        "mean_return": -358.0456768485729,
+        "std_return": 58.74592037347446,
+        "min_return": -416.79159722204736,
+        "max_return": -299.29975647509843
+      }
+    }
+  ],
+  "summary": {
+    "q_learning": {
+      "runs": 1,
+      "mean_of_mean_return": -130.95536527353136,
+      "std_of_mean_return": 0.0,
+      "mean_eval_std_return": 41.31549450885979,
+      "best_mean_return": -130.95536527353136,
+      "worst_mean_return": -130.95536527353136
+    },
+    "dqn": {
+      "runs": 1,
+      "mean_of_mean_return": -254.8964278389759,
+      "std_of_mean_return": 0.0,
+      "mean_eval_std_return": 97.97259985781817,
+      "best_mean_return": -254.8964278389759,
+      "worst_mean_return": -254.8964278389759
+    },
+    "ppo": {
+      "runs": 1,
+      "mean_of_mean_return": -261.93062738319077,
+      "std_of_mean_return": 0.0,
+      "mean_eval_std_return": 12.590297648196497,
+      "best_mean_return": -261.93062738319077,
+      "worst_mean_return": -261.93062738319077
+    },
+    "actor_critic": {
+      "runs": 1,
+      "mean_of_mean_return": -358.0456768485729,
+      "std_of_mean_return": 0.0,
+      "mean_eval_std_return": 58.74592037347446,
+      "best_mean_return": -358.0456768485729,
+      "worst_mean_return": -358.0456768485729
+    }
+  }
+}

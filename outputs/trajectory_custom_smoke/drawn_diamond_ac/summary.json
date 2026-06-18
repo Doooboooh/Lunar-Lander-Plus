@@ -1,0 +1,57 @@
+{
+  "task": "two_waypoint",
+  "route_label": "drawn_diamond_ac",
+  "waypoints": [
+    [
+      -0.45,
+      1.05
+    ],
+    [
+      0.0,
+      1.3
+    ],
+    [
+      0.45,
+      1.05
+    ],
+    [
+      0.0,
+      0.8
+    ]
+  ],
+  "radius": 0.16,
+  "reward_config": {
+    "progress_reward": 8.0,
+    "waypoint_bonus": 45.0,
+    "route_bonus": 80.0,
+    "early_landing_penalty": 160.0,
+    "landing_after_route_bonus": 40.0,
+    "base_reward_scale_before_route": 0.2,
+    "base_reward_scale_after_route": 1.0
+  },
+  "reward_results": {
+    "actor_critic": {
+      "mean_return": -241.86591323551625,
+      "std_return": 0.0,
+      "min_return": -241.86591323551625,
+      "max_return": -241.86591323551625
+    }
+  },
+  "trajectory_results": {
+    "actor_critic": {
+      "episodes": 1.0,
+      "mean_return": -273.14487239916355,
+      "std_return": 0.0,
+      "min_return": -273.14487239916355,
+      "max_return": -273.14487239916355,
+      "mean_waypoints_completed": 0.0,
+      "max_waypoints_completed": 0.0,
+      "route_completion_rate": 0.0,
+      "landed_after_route_rate": 0.0,
+      "mean_final_target_distance": 1.1891593933105469,
+      "mean_episode_length": 76.0,
+      "waypoint_count": 4.0
+    }
+  },
+  "note": "Q-Learning is intentionally omitted here because the augmented continuous observation makes tabular discretization explode."
+}

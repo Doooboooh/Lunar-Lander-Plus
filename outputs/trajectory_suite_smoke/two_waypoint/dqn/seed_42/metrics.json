@@ -1,0 +1,27 @@
+{
+  "algorithm": "DQN",
+  "config": {
+    "episodes": 4,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.001,
+    "gamma": 0.99,
+    "batch_size": 16,
+    "replay_size": 100000,
+    "warmup_steps": 32,
+    "target_update": 1000,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay_steps": 30000,
+    "seed": 42,
+    "eval_episodes": 1,
+    "device": "auto",
+    "output_dir": "outputs/trajectory_suite_smoke/two_waypoint/dqn/seed_42"
+  },
+  "metrics": {
+    "mean_return": -318.1545627358079,
+    "std_return": 0.0,
+    "min_return": -318.1545627358079,
+    "max_return": -318.1545627358079
+  }
+}

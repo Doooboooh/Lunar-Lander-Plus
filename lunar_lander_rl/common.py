@@ -13,6 +13,7 @@ import torch.nn as nn
 
 
 ENV_ID = "LunarLander-v3"
+EnvFactory = Callable[..., Any]
 
 
 def import_gym() -> Any:
@@ -67,8 +68,9 @@ def evaluate_policy(
     max_steps: int = 1000,
     seed: int = 1234,
     render: bool = False,
+    env_factory: EnvFactory = make_env,
 ) -> dict[str, float]:
-    env = make_env(render=render, seed=seed)
+    env = env_factory(render=render, seed=seed)
     returns: list[float] = []
     try:
         for episode in range(episodes):

@@ -1,0 +1,27 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 8,
+    "rollout_steps": 256,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 3,
+    "device": "auto",
+    "output_dir": "outputs/trajectory_suite_probe/near_two_waypoint/ppo/seed_42"
+  },
+  "metrics": {
+    "mean_return": -181.83001939536828,
+    "std_return": 41.21203786433931,
+    "min_return": -239.99345076017823,
+    "max_return": -149.5219224117396
+  }
+}

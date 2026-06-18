@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
-from .common import ensure_dir, evaluate_policy, get_device, make_env, save_history, save_json, set_seed
+from .common import EnvFactory, ensure_dir, evaluate_policy, get_device, make_env, save_history, save_json, set_seed
 
 
 class ActorCriticNet(nn.Module):
@@ -55,11 +55,15 @@ def discounted_returns(rewards: list[float], gamma: float, device: torch.device)
     return (tensor - tensor.mean()) / (tensor.std() + 1e-8)
 
 
-def train(cfg: ActorCriticConfig) -> dict[str, float]:
+def train(
+    cfg: ActorCriticConfig,
+    env_factory: EnvFactory = make_env,
+    eval_env_factory: EnvFactory | None = None,
+) -> dict[str, float]:
     set_seed(cfg.seed)
     device = get_device(cfg.device)
     output_dir = ensure_dir(cfg.output_dir)
-    env = make_env(seed=cfg.seed)
+    env = env_factory(seed=cfg.seed)
     obs_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
@@ -138,7 +142,7 @@ def train(cfg: ActorCriticConfig) -> dict[str, float]:
             logits, _ = model(obs_tensor)
             return int(torch.argmax(logits, dim=1).item())
 
-    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000)
+    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000, env_factory=eval_env_factory or env_factory)
     save_history(history, output_dir)
     save_json({"algorithm": "Actor-Critic", "config": cfg, "metrics": metrics}, output_dir / "metrics.json")
     print(f"[Actor-Critic] eval mean return: {metrics['mean_return']:.1f}")
