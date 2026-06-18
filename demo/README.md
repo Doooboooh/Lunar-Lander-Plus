@@ -9,7 +9,7 @@
 安装依赖：
 
 ```bash
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 ```
 
 运行全部环境：
