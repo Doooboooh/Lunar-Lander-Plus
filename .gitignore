@@ -1,0 +1,36 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Virtualenvs (local only)
+.venv/
+venv/
+env/
+
+# Training artifacts
+obstacle_lander/outputs/
+*.pt
+*.pkl
+history.csv
+metrics.json
+*.gif
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+logs/
