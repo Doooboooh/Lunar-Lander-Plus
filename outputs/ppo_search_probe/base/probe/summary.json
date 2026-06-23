@@ -1,0 +1,143 @@
+{
+  "mode": "base",
+  "profile": "probe",
+  "task": "two_waypoint",
+  "runs": [
+    {
+      "name": "relu_128_low_entropy",
+      "rank_score": -137.9093500855969,
+      "config": {
+        "updates": 10,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.003,
+        "hidden_layers": 2,
+        "activation": "relu",
+        "eval_interval": 5,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_probe/base/probe/02_relu_128_low_entropy"
+      },
+      "metrics": {
+        "mean_return": -137.9093500855969,
+        "std_return": 20.875091880531226,
+        "min_return": -157.135385699427,
+        "max_return": -108.89468653759243
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_probe/base/probe/02_relu_128_low_entropy"
+    },
+    {
+      "name": "baseline_tanh_128",
+      "rank_score": -200.12339526953053,
+      "config": {
+        "updates": 10,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "hidden_layers": 2,
+        "activation": "tanh",
+        "eval_interval": 5,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_probe/base/probe/01_baseline_tanh_128"
+      },
+      "metrics": {
+        "mean_return": -200.12339526953053,
+        "std_return": 70.86743196736272,
+        "min_return": -281.6721537324173,
+        "max_return": -108.89468653759243
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_probe/base/probe/01_baseline_tanh_128"
+    },
+    {
+      "name": "tanh_256_low_lr",
+      "rank_score": -237.17762010731562,
+      "config": {
+        "updates": 10,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 256,
+        "lr": 0.0001,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.005,
+        "hidden_layers": 2,
+        "activation": "tanh",
+        "eval_interval": 5,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_probe/base/probe/03_tanh_256_low_lr"
+      },
+      "metrics": {
+        "mean_return": -237.17762010731562,
+        "std_return": 61.210063074185875,
+        "min_return": -290.00025567575847,
+        "max_return": -151.37493417063178
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_probe/base/probe/03_tanh_256_low_lr"
+    },
+    {
+      "name": "elu_256",
+      "rank_score": -248.2860259334626,
+      "config": {
+        "updates": 10,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 256,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "hidden_layers": 2,
+        "activation": "elu",
+        "eval_interval": 5,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 3,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_probe/base/probe/04_elu_256"
+      },
+      "metrics": {
+        "mean_return": -248.2860259334626,
+        "std_return": 74.3464486717329,
+        "min_return": -309.0384024378923,
+        "max_return": -143.59326344006024
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_probe/base/probe/04_elu_256"
+    }
+  ]
+}

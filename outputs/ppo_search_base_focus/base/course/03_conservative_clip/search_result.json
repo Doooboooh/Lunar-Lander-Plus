@@ -1,0 +1,34 @@
+{
+  "name": "conservative_clip",
+  "rank_score": -653.1609574983825,
+  "config": {
+    "updates": 80,
+    "rollout_steps": 512,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0001,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.1,
+    "update_epochs": 6,
+    "minibatch_size": 128,
+    "value_coef": 0.5,
+    "entropy_coef": 0.003,
+    "hidden_layers": 2,
+    "activation": "tanh",
+    "eval_interval": 20,
+    "selection_eval_episodes": 5,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_base_focus/base/course/03_conservative_clip"
+  },
+  "metrics": {
+    "mean_return": -653.1609574983825,
+    "std_return": 115.56658882911609,
+    "min_return": -777.2494986591482,
+    "max_return": -466.15209240597534
+  },
+  "trajectory_metrics": null,
+  "output_dir": "outputs/ppo_search_base_focus/base/course/03_conservative_clip"
+}

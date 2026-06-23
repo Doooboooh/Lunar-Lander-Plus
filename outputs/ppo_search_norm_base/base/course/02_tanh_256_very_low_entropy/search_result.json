@@ -1,0 +1,35 @@
+{
+  "name": "tanh_256_very_low_entropy",
+  "rank_score": -153.10560453980094,
+  "config": {
+    "updates": 80,
+    "rollout_steps": 512,
+    "max_steps": 1000,
+    "hidden_dim": 256,
+    "lr": 0.0001,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 6,
+    "minibatch_size": 128,
+    "value_coef": 0.5,
+    "entropy_coef": 0.001,
+    "hidden_layers": 2,
+    "activation": "tanh",
+    "eval_interval": 20,
+    "selection_eval_episodes": 5,
+    "normalize_observations": true,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_norm_base/base/course/02_tanh_256_very_low_entropy"
+  },
+  "metrics": {
+    "mean_return": -153.10560453980094,
+    "std_return": 32.78250012368354,
+    "min_return": -210.0628832583741,
+    "max_return": -108.89468653759243
+  },
+  "trajectory_metrics": null,
+  "output_dir": "outputs/ppo_search_norm_base/base/course/02_tanh_256_very_low_entropy"
+}

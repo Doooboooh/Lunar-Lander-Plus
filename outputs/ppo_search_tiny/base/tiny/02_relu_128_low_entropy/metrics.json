@@ -1,0 +1,31 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 4,
+    "rollout_steps": 256,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.003,
+    "hidden_layers": 2,
+    "activation": "relu",
+    "eval_interval": 2,
+    "selection_eval_episodes": 2,
+    "seed": 42,
+    "eval_episodes": 2,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_tiny/base/tiny/02_relu_128_low_entropy"
+  },
+  "metrics": {
+    "mean_return": -406.8167071847756,
+    "std_return": 25.240098392102652,
+    "min_return": -432.0568055768783,
+    "max_return": -381.57660879267297
+  }
+}

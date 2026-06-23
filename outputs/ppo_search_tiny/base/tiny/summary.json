@@ -1,0 +1,143 @@
+{
+  "mode": "base",
+  "profile": "tiny",
+  "task": "two_waypoint",
+  "runs": [
+    {
+      "name": "tanh_256_low_lr",
+      "rank_score": -225.90786999968134,
+      "config": {
+        "updates": 4,
+        "rollout_steps": 256,
+        "max_steps": 1000,
+        "hidden_dim": 256,
+        "lr": 0.0001,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 64,
+        "value_coef": 0.5,
+        "entropy_coef": 0.005,
+        "hidden_layers": 2,
+        "activation": "tanh",
+        "eval_interval": 2,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 2,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_tiny/base/tiny/03_tanh_256_low_lr"
+      },
+      "metrics": {
+        "mean_return": -225.90786999968134,
+        "std_return": 91.37371027310685,
+        "min_return": -317.2815802727882,
+        "max_return": -134.53415972657447
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_tiny/base/tiny/03_tanh_256_low_lr"
+    },
+    {
+      "name": "elu_256",
+      "rank_score": -269.985354963963,
+      "config": {
+        "updates": 4,
+        "rollout_steps": 256,
+        "max_steps": 1000,
+        "hidden_dim": 256,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 64,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "hidden_layers": 2,
+        "activation": "elu",
+        "eval_interval": 2,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 2,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_tiny/base/tiny/04_elu_256"
+      },
+      "metrics": {
+        "mean_return": -269.985354963963,
+        "std_return": 86.8312844216251,
+        "min_return": -356.8166393855881,
+        "max_return": -183.15407054233788
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_tiny/base/tiny/04_elu_256"
+    },
+    {
+      "name": "relu_128_low_entropy",
+      "rank_score": -526.1637305275917,
+      "config": {
+        "updates": 4,
+        "rollout_steps": 256,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 64,
+        "value_coef": 0.5,
+        "entropy_coef": 0.003,
+        "hidden_layers": 2,
+        "activation": "relu",
+        "eval_interval": 2,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 2,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_tiny/base/tiny/02_relu_128_low_entropy"
+      },
+      "metrics": {
+        "mean_return": -526.1637305275917,
+        "std_return": 57.106316862787,
+        "min_return": -583.2700473903787,
+        "max_return": -469.05741366480476
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_tiny/base/tiny/02_relu_128_low_entropy"
+    },
+    {
+      "name": "baseline_tanh_128",
+      "rank_score": -578.555640629864,
+      "config": {
+        "updates": 4,
+        "rollout_steps": 256,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 64,
+        "value_coef": 0.5,
+        "entropy_coef": 0.01,
+        "hidden_layers": 2,
+        "activation": "tanh",
+        "eval_interval": 2,
+        "selection_eval_episodes": 2,
+        "seed": 42,
+        "eval_episodes": 2,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_tiny/base/tiny/01_baseline_tanh_128"
+      },
+      "metrics": {
+        "mean_return": -578.555640629864,
+        "std_return": 4.714406760514748,
+        "min_return": -583.2700473903787,
+        "max_return": -573.8412338693493
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_tiny/base/tiny/01_baseline_tanh_128"
+    }
+  ]
+}

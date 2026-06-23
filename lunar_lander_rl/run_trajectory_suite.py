@@ -11,7 +11,7 @@ from .actor_critic import ActorCriticConfig, ActorCriticNet, train as train_acto
 from .common import ensure_dir, get_device, mlp, save_json
 from .dqn import DQNConfig, train as train_dqn
 from .ppo import ActorCriticNet as PPONet
-from .ppo import PPOConfig, train as train_ppo
+from .ppo import PPOConfig, load_obs_normalizer, train as train_ppo
 from .trajectory_env import ROUTES, load_waypoints, make_waypoint_env, parse_waypoint_text, resolve_waypoints
 from .trajectory_eval import evaluate_waypoint_policy
 
@@ -116,10 +116,12 @@ def load_policy(algorithm: str, model_dir: Path, env_factory, hidden_dim: int, d
 
     model.load_state_dict(torch.load(model_dir / "best_policy.pt", map_location=device))
     model.eval()
+    obs_rms = load_obs_normalizer(model_dir / "obs_norm.npz") if algorithm == "ppo" else None
 
     def act(obs: np.ndarray) -> int:
         with torch.no_grad():
-            obs_tensor = torch.tensor(obs, dtype=torch.float32, device=device).unsqueeze(0)
+            model_obs = obs_rms.normalize(obs) if obs_rms is not None else obs
+            obs_tensor = torch.tensor(model_obs, dtype=torch.float32, device=device).unsqueeze(0)
             if algorithm == "dqn":
                 logits = model(obs_tensor)
             else:

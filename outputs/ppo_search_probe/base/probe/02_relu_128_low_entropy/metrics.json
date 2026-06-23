@@ -1,0 +1,31 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 10,
+    "rollout_steps": 512,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 128,
+    "value_coef": 0.5,
+    "entropy_coef": 0.003,
+    "hidden_layers": 2,
+    "activation": "relu",
+    "eval_interval": 5,
+    "selection_eval_episodes": 2,
+    "seed": 42,
+    "eval_episodes": 3,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_probe/base/probe/02_relu_128_low_entropy"
+  },
+  "metrics": {
+    "mean_return": -136.20606519534928,
+    "std_return": 35.552659170832406,
+    "min_return": -172.27085978239114,
+    "max_return": -87.83416716892378
+  }
+}

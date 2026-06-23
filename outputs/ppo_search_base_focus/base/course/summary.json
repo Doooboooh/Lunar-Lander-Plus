@@ -1,0 +1,177 @@
+{
+  "mode": "base",
+  "profile": "course",
+  "task": "two_waypoint",
+  "runs": [
+    {
+      "name": "tanh_256_low_lr",
+      "rank_score": -153.10560453980094,
+      "config": {
+        "updates": 80,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 256,
+        "lr": 0.0001,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.005,
+        "hidden_layers": 2,
+        "activation": "tanh",
+        "eval_interval": 20,
+        "selection_eval_episodes": 5,
+        "seed": 42,
+        "eval_episodes": 5,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_base_focus/base/course/02_tanh_256_low_lr"
+      },
+      "metrics": {
+        "mean_return": -153.10560453980094,
+        "std_return": 32.78250012368354,
+        "min_return": -210.0628832583741,
+        "max_return": -108.89468653759243
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_base_focus/base/course/02_tanh_256_low_lr"
+    },
+    {
+      "name": "relu_256_low_lr",
+      "rank_score": -340.65603276259696,
+      "config": {
+        "updates": 80,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 256,
+        "lr": 0.0001,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 6,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.003,
+        "hidden_layers": 2,
+        "activation": "relu",
+        "eval_interval": 20,
+        "selection_eval_episodes": 5,
+        "seed": 42,
+        "eval_episodes": 5,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_base_focus/base/course/04_relu_256_low_lr"
+      },
+      "metrics": {
+        "mean_return": -340.65603276259696,
+        "std_return": 150.0545745049846,
+        "min_return": -489.4398428642779,
+        "max_return": -135.91887987127612
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_base_focus/base/course/04_relu_256_low_lr"
+    },
+    {
+      "name": "relu_256_longer_rollout",
+      "rank_score": -365.4188213451954,
+      "config": {
+        "updates": 80,
+        "rollout_steps": 1024,
+        "max_steps": 1000,
+        "hidden_dim": 256,
+        "lr": 0.0001,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 6,
+        "minibatch_size": 256,
+        "value_coef": 0.5,
+        "entropy_coef": 0.003,
+        "hidden_layers": 2,
+        "activation": "relu",
+        "eval_interval": 20,
+        "selection_eval_episodes": 5,
+        "seed": 42,
+        "eval_episodes": 5,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_base_focus/base/course/05_relu_256_longer_rollout"
+      },
+      "metrics": {
+        "mean_return": -365.4188213451954,
+        "std_return": 248.53963468190727,
+        "min_return": -798.8287823777832,
+        "max_return": -132.5821600287842
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_base_focus/base/course/05_relu_256_longer_rollout"
+    },
+    {
+      "name": "relu_128_low_entropy",
+      "rank_score": -441.16353240149357,
+      "config": {
+        "updates": 80,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.2,
+        "update_epochs": 4,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.003,
+        "hidden_layers": 2,
+        "activation": "relu",
+        "eval_interval": 20,
+        "selection_eval_episodes": 5,
+        "seed": 42,
+        "eval_episodes": 5,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_base_focus/base/course/01_relu_128_low_entropy"
+      },
+      "metrics": {
+        "mean_return": -441.16353240149357,
+        "std_return": 35.24420240669252,
+        "min_return": -506.99615280319944,
+        "max_return": -404.997127347395
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_base_focus/base/course/01_relu_128_low_entropy"
+    },
+    {
+      "name": "conservative_clip",
+      "rank_score": -653.1609574983825,
+      "config": {
+        "updates": 80,
+        "rollout_steps": 512,
+        "max_steps": 1000,
+        "hidden_dim": 128,
+        "lr": 0.0001,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_coef": 0.1,
+        "update_epochs": 6,
+        "minibatch_size": 128,
+        "value_coef": 0.5,
+        "entropy_coef": 0.003,
+        "hidden_layers": 2,
+        "activation": "tanh",
+        "eval_interval": 20,
+        "selection_eval_episodes": 5,
+        "seed": 42,
+        "eval_episodes": 5,
+        "device": "auto",
+        "output_dir": "outputs/ppo_search_base_focus/base/course/03_conservative_clip"
+      },
+      "metrics": {
+        "mean_return": -653.1609574983825,
+        "std_return": 115.56658882911609,
+        "min_return": -777.2494986591482,
+        "max_return": -466.15209240597534
+      },
+      "trajectory_metrics": null,
+      "output_dir": "outputs/ppo_search_base_focus/base/course/03_conservative_clip"
+    }
+  ]
+}

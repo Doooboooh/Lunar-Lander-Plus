@@ -1,0 +1,32 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 4,
+    "rollout_steps": 256,
+    "max_steps": 1000,
+    "hidden_dim": 256,
+    "lr": 0.0001,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.005,
+    "hidden_layers": 2,
+    "activation": "tanh",
+    "eval_interval": 2,
+    "selection_eval_episodes": 2,
+    "normalize_observations": true,
+    "seed": 42,
+    "eval_episodes": 2,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_norm_smoke/base/tiny/02_tanh_256_low_lr"
+  },
+  "metrics": {
+    "mean_return": -181.46935320577893,
+    "std_return": 82.04924988460425,
+    "min_return": -263.5186030903832,
+    "max_return": -99.42010332117466
+  }
+}

@@ -12,15 +12,94 @@ from torch.distributions import Categorical
 from .common import EnvFactory, ensure_dir, evaluate_policy, get_device, make_env, save_history, save_json, set_seed
 
 
-class ActorCriticNet(nn.Module):
-    def __init__(self, obs_dim: int, action_dim: int, hidden_dim: int) -> None:
-        super().__init__()
-        self.body = nn.Sequential(
-            nn.Linear(obs_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
+class RunningMeanStd:
+    def __init__(self, shape: tuple[int, ...], eps: float = 1e-4) -> None:
+        self.mean = np.zeros(shape, dtype=np.float64)
+        self.var = np.ones(shape, dtype=np.float64)
+        self.count = float(eps)
+
+    def update(self, batch: np.ndarray) -> None:
+        batch = np.asarray(batch, dtype=np.float64)
+        if batch.ndim == 1:
+            batch = batch[None, :]
+        batch_mean = np.mean(batch, axis=0)
+        batch_var = np.var(batch, axis=0)
+        batch_count = float(batch.shape[0])
+        self._update_from_moments(batch_mean, batch_var, batch_count)
+
+    def _update_from_moments(self, batch_mean: np.ndarray, batch_var: np.ndarray, batch_count: float) -> None:
+        delta = batch_mean - self.mean
+        total_count = self.count + batch_count
+        new_mean = self.mean + delta * batch_count / total_count
+        m_a = self.var * self.count
+        m_b = batch_var * batch_count
+        m2 = m_a + m_b + np.square(delta) * self.count * batch_count / total_count
+        self.mean = new_mean
+        self.var = m2 / total_count
+        self.count = total_count
+
+    def normalize(self, batch: np.ndarray, clip: float = 10.0) -> np.ndarray:
+        normalized = (np.asarray(batch, dtype=np.float32) - self.mean.astype(np.float32)) / np.sqrt(
+            self.var.astype(np.float32) + 1e-8
         )
+        return np.clip(normalized, -clip, clip)
+
+
+def save_obs_normalizer(path, obs_rms: RunningMeanStd | None) -> None:
+    if obs_rms is None:
+        return
+    np.savez(
+        path,
+        mean=obs_rms.mean.astype(np.float32),
+        var=obs_rms.var.astype(np.float32),
+        count=np.array([obs_rms.count], dtype=np.float64),
+    )
+
+
+def load_obs_normalizer(path) -> RunningMeanStd | None:
+    path = str(path)
+    try:
+        data = np.load(path)
+    except FileNotFoundError:
+        return None
+    mean = np.asarray(data["mean"], dtype=np.float64)
+    var = np.asarray(data["var"], dtype=np.float64)
+    count = float(np.asarray(data["count"]).reshape(-1)[0])
+    obs_rms = RunningMeanStd(mean.shape)
+    obs_rms.mean = mean
+    obs_rms.var = var
+    obs_rms.count = count
+    return obs_rms
+
+
+class ActorCriticNet(nn.Module):
+    def __init__(
+        self,
+        obs_dim: int,
+        action_dim: int,
+        hidden_dim: int,
+        hidden_layers: int = 2,
+        activation: str = "tanh",
+    ) -> None:
+        super().__init__()
+        if hidden_layers < 1:
+            raise ValueError("hidden_layers must be >= 1")
+        if activation == "tanh":
+            activation_layer: type[nn.Module] = nn.Tanh
+        elif activation == "relu":
+            activation_layer = nn.ReLU
+        elif activation == "elu":
+            activation_layer = nn.ELU
+        else:
+            raise ValueError("activation must be one of: tanh, relu, elu")
+
+        layers: list[nn.Module] = []
+        input_dim = obs_dim
+        for _ in range(hidden_layers):
+            layers.append(nn.Linear(input_dim, hidden_dim))
+            layers.append(activation_layer())
+            input_dim = hidden_dim
+        self.body = nn.Sequential(*layers)
         self.actor = nn.Linear(hidden_dim, action_dim)
         self.critic = nn.Linear(hidden_dim, 1)
 
@@ -49,6 +128,11 @@ class PPOConfig:
     minibatch_size: int = 256
     value_coef: float = 0.5
     entropy_coef: float = 0.01
+    hidden_layers: int = 2
+    activation: str = "tanh"
+    eval_interval: int = 10
+    selection_eval_episodes: int = 3
+    normalize_observations: bool = True
     seed: int = 42
     eval_episodes: int = 5
     device: str = "auto"
@@ -87,11 +171,14 @@ def train(
     obs_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
-    model = ActorCriticNet(obs_dim, action_dim, cfg.hidden_dim).to(device)
+    model = ActorCriticNet(obs_dim, action_dim, cfg.hidden_dim, cfg.hidden_layers, cfg.activation).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr)
+    obs_rms = RunningMeanStd((obs_dim,)) if cfg.normalize_observations else None
     history: list[dict[str, float]] = []
     best_eval = float("-inf")
     obs, _ = env.reset(seed=cfg.seed)
+    if obs_rms is not None:
+        obs_rms.update(obs)
     episode_return = 0.0
     completed_episodes = 0
 
@@ -105,7 +192,8 @@ def train(
             value_buf = []
 
             for _ in range(cfg.rollout_steps):
-                obs_tensor = torch.tensor(obs, dtype=torch.float32, device=device).unsqueeze(0)
+                model_obs = obs_rms.normalize(obs) if obs_rms is not None else obs
+                obs_tensor = torch.tensor(model_obs, dtype=torch.float32, device=device).unsqueeze(0)
                 with torch.no_grad():
                     action, logprob, value = model.act(obs_tensor)
                 next_obs, reward, terminated, truncated, _ = env.step(int(action.item()))
@@ -119,6 +207,8 @@ def train(
                 value_buf.append(float(value.item()))
                 episode_return += float(reward)
                 obs = next_obs
+                if obs_rms is not None:
+                    obs_rms.update(obs)
 
                 if done:
                     completed_episodes += 1
@@ -133,10 +223,14 @@ def train(
                     obs, _ = env.reset(seed=cfg.seed + completed_episodes)
 
             with torch.no_grad():
-                next_obs_tensor = torch.tensor(obs, dtype=torch.float32, device=device).unsqueeze(0)
+                next_model_obs = obs_rms.normalize(obs) if obs_rms is not None else obs
+                next_obs_tensor = torch.tensor(next_model_obs, dtype=torch.float32, device=device).unsqueeze(0)
                 _, next_value = model(next_obs_tensor)
 
-            obs_tensor = torch.tensor(np.array(obs_buf), dtype=torch.float32, device=device)
+            rollout_obs = np.array(obs_buf, dtype=np.float32)
+            if obs_rms is not None:
+                rollout_obs = obs_rms.normalize(rollout_obs)
+            obs_tensor = torch.tensor(rollout_obs, dtype=torch.float32, device=device)
             actions = torch.tensor(action_buf, dtype=torch.long, device=device)
             old_logprobs = torch.tensor(logprob_buf, dtype=torch.float32, device=device)
             rewards = torch.tensor(reward_buf, dtype=torch.float32, device=device)
@@ -172,13 +266,38 @@ def train(
             if update == 1 or update % 10 == 0:
                 recent = np.mean([x["return"] for x in history[-10:]]) if history else episode_return
                 print(f"[PPO] update={update:04d} episodes={completed_episodes:04d} recent_return={recent:8.1f}")
-                if recent > best_eval:
-                    best_eval = float(recent)
+
+            should_eval = update == 1 or (cfg.eval_interval > 0 and update % cfg.eval_interval == 0)
+            if should_eval:
+                model.eval()
+
+                def current_act(obs_np: np.ndarray) -> int:
+                    with torch.no_grad():
+                        model_obs = obs_rms.normalize(obs_np) if obs_rms is not None else obs_np
+                        obs_tensor = torch.tensor(model_obs, dtype=torch.float32, device=device).unsqueeze(0)
+                        logits, _ = model(obs_tensor)
+                        return int(torch.argmax(logits, dim=1).item())
+
+                eval_metrics = evaluate_policy(
+                    current_act,
+                    cfg.selection_eval_episodes,
+                    seed=cfg.seed + 30000 + update * 100,
+                    env_factory=eval_env_factory or env_factory,
+                )
+                model.train()
+                eval_mean = float(eval_metrics["mean_return"])
+                if eval_mean > best_eval:
+                    best_eval = eval_mean
                     torch.save(model.state_dict(), output_dir / "best_policy.pt")
+                print(
+                    f"[PPO] update={update:04d} eval_mean={eval_mean:8.1f} "
+                    f"best_eval={best_eval:8.1f}"
+                )
     finally:
         env.close()
 
     torch.save(model.state_dict(), output_dir / "last_policy.pt")
+    save_obs_normalizer(output_dir / "obs_norm.npz", obs_rms)
     if not (output_dir / "best_policy.pt").exists():
         torch.save(model.state_dict(), output_dir / "best_policy.pt")
     model.load_state_dict(torch.load(output_dir / "best_policy.pt", map_location=device))
@@ -186,7 +305,8 @@ def train(
 
     def act(obs_np: np.ndarray) -> int:
         with torch.no_grad():
-            obs_tensor = torch.tensor(obs_np, dtype=torch.float32, device=device).unsqueeze(0)
+            model_obs = obs_rms.normalize(obs_np) if obs_rms is not None else obs_np
+            obs_tensor = torch.tensor(model_obs, dtype=torch.float32, device=device).unsqueeze(0)
             logits, _ = model(obs_tensor)
             return int(torch.argmax(logits, dim=1).item())
 
@@ -201,6 +321,13 @@ def parse_args() -> PPOConfig:
     parser = argparse.ArgumentParser(description="PPO demo for LunarLander-v3.")
     parser.add_argument("--updates", type=int, default=PPOConfig.updates)
     parser.add_argument("--rollout-steps", type=int, default=PPOConfig.rollout_steps)
+    parser.add_argument("--hidden-dim", type=int, default=PPOConfig.hidden_dim)
+    parser.add_argument("--hidden-layers", type=int, default=PPOConfig.hidden_layers)
+    parser.add_argument("--activation", choices=["tanh", "relu", "elu"], default=PPOConfig.activation)
+    parser.add_argument("--lr", type=float, default=PPOConfig.lr)
+    parser.add_argument("--entropy-coef", type=float, default=PPOConfig.entropy_coef)
+    parser.add_argument("--eval-interval", type=int, default=PPOConfig.eval_interval)
+    parser.add_argument("--selection-eval-episodes", type=int, default=PPOConfig.selection_eval_episodes)
     parser.add_argument("--eval-episodes", type=int, default=PPOConfig.eval_episodes)
     parser.add_argument("--seed", type=int, default=PPOConfig.seed)
     parser.add_argument("--device", default=PPOConfig.device)
@@ -209,6 +336,13 @@ def parse_args() -> PPOConfig:
     return PPOConfig(
         updates=args.updates,
         rollout_steps=args.rollout_steps,
+        hidden_dim=args.hidden_dim,
+        hidden_layers=args.hidden_layers,
+        activation=args.activation,
+        lr=args.lr,
+        entropy_coef=args.entropy_coef,
+        eval_interval=args.eval_interval,
+        selection_eval_episodes=args.selection_eval_episodes,
         eval_episodes=args.eval_episodes,
         seed=args.seed,
         device=args.device,
@@ -218,4 +352,3 @@ def parse_args() -> PPOConfig:
 
 if __name__ == "__main__":
     train(parse_args())
-

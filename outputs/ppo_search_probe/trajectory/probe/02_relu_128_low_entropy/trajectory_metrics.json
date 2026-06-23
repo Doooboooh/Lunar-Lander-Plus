@@ -1,0 +1,16 @@
+{
+  "episodes": 3.0,
+  "mean_return": -177.30634773005445,
+  "std_return": 8.149088493291103,
+  "min_return": -187.70133931499024,
+  "max_return": -167.7996086897448,
+  "mean_waypoints_completed": 0.0,
+  "max_waypoints_completed": 0.0,
+  "route_completion_rate": 0.0,
+  "landed_after_route_rate": 0.0,
+  "touchdown_after_route_rate": 0.0,
+  "settled_after_route_rate": 0.0,
+  "mean_final_target_distance": 1.3040985663731892,
+  "mean_episode_length": 60.333333333333336,
+  "waypoint_count": 2.0
+}

@@ -1,0 +1,34 @@
+{
+  "name": "tanh_256_low_lr",
+  "rank_score": -225.90786999968134,
+  "config": {
+    "updates": 4,
+    "rollout_steps": 256,
+    "max_steps": 1000,
+    "hidden_dim": 256,
+    "lr": 0.0001,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.005,
+    "hidden_layers": 2,
+    "activation": "tanh",
+    "eval_interval": 2,
+    "selection_eval_episodes": 2,
+    "seed": 42,
+    "eval_episodes": 2,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_tiny/base/tiny/03_tanh_256_low_lr"
+  },
+  "metrics": {
+    "mean_return": -225.90786999968134,
+    "std_return": 91.37371027310685,
+    "min_return": -317.2815802727882,
+    "max_return": -134.53415972657447
+  },
+  "trajectory_metrics": null,
+  "output_dir": "outputs/ppo_search_tiny/base/tiny/03_tanh_256_low_lr"
+}

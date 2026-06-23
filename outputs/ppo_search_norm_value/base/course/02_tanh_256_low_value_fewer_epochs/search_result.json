@@ -1,0 +1,35 @@
+{
+  "name": "tanh_256_low_value_fewer_epochs",
+  "rank_score": -271.3116500878026,
+  "config": {
+    "updates": 80,
+    "rollout_steps": 512,
+    "max_steps": 1000,
+    "hidden_dim": 256,
+    "lr": 0.0001,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 2,
+    "minibatch_size": 128,
+    "value_coef": 0.25,
+    "entropy_coef": 0.003,
+    "hidden_layers": 2,
+    "activation": "tanh",
+    "eval_interval": 20,
+    "selection_eval_episodes": 5,
+    "normalize_observations": true,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_norm_value/base/course/02_tanh_256_low_value_fewer_epochs"
+  },
+  "metrics": {
+    "mean_return": -271.3116500878026,
+    "std_return": 146.66741905250203,
+    "min_return": -510.27301353834264,
+    "max_return": -63.015892164632966
+  },
+  "trajectory_metrics": null,
+  "output_dir": "outputs/ppo_search_norm_value/base/course/02_tanh_256_low_value_fewer_epochs"
+}

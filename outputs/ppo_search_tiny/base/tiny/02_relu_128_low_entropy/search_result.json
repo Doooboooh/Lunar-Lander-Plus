@@ -1,0 +1,34 @@
+{
+  "name": "relu_128_low_entropy",
+  "rank_score": -526.1637305275917,
+  "config": {
+    "updates": 4,
+    "rollout_steps": 256,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.003,
+    "hidden_layers": 2,
+    "activation": "relu",
+    "eval_interval": 2,
+    "selection_eval_episodes": 2,
+    "seed": 42,
+    "eval_episodes": 2,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_tiny/base/tiny/02_relu_128_low_entropy"
+  },
+  "metrics": {
+    "mean_return": -526.1637305275917,
+    "std_return": 57.106316862787,
+    "min_return": -583.2700473903787,
+    "max_return": -469.05741366480476
+  },
+  "trajectory_metrics": null,
+  "output_dir": "outputs/ppo_search_tiny/base/tiny/02_relu_128_low_entropy"
+}

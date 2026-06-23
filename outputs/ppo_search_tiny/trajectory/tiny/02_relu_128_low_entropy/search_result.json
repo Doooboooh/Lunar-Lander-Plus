@@ -1,0 +1,49 @@
+{
+  "name": "relu_128_low_entropy",
+  "rank_score": -191.19320192585036,
+  "config": {
+    "updates": 4,
+    "rollout_steps": 256,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.003,
+    "hidden_layers": 2,
+    "activation": "relu",
+    "eval_interval": 2,
+    "selection_eval_episodes": 2,
+    "seed": 42,
+    "eval_episodes": 2,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_tiny/trajectory/tiny/02_relu_128_low_entropy"
+  },
+  "metrics": {
+    "mean_return": -191.19320192585036,
+    "std_return": 6.61053746836852,
+    "min_return": -197.8037393942189,
+    "max_return": -184.58266445748185
+  },
+  "trajectory_metrics": {
+    "episodes": 2.0,
+    "mean_return": -189.1903331205998,
+    "std_return": 5.924361933361581,
+    "min_return": -195.11469505396138,
+    "max_return": -183.26597118723822,
+    "mean_waypoints_completed": 0.0,
+    "max_waypoints_completed": 0.0,
+    "route_completion_rate": 0.0,
+    "landed_after_route_rate": 0.0,
+    "touchdown_after_route_rate": 0.0,
+    "settled_after_route_rate": 0.0,
+    "mean_final_target_distance": 1.297694981098175,
+    "mean_episode_length": 57.0,
+    "waypoint_count": 2.0
+  },
+  "output_dir": "outputs/ppo_search_tiny/trajectory/tiny/02_relu_128_low_entropy"
+}

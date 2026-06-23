@@ -1,0 +1,31 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 80,
+    "rollout_steps": 512,
+    "max_steps": 1000,
+    "hidden_dim": 256,
+    "lr": 0.0001,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 128,
+    "value_coef": 0.5,
+    "entropy_coef": 0.005,
+    "hidden_layers": 2,
+    "activation": "tanh",
+    "eval_interval": 20,
+    "selection_eval_episodes": 5,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_base_focus/base/course/02_tanh_256_low_lr"
+  },
+  "metrics": {
+    "mean_return": -172.40253295331632,
+    "std_return": 87.12981071436072,
+    "min_return": -337.0141933207765,
+    "max_return": -87.83416716892378
+  }
+}
