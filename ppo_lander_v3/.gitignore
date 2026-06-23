@@ -1,0 +1,7 @@
+# 训练产物（可由 train_ppo.py 重新生成）
+models/
+logs/
+tb/
+
+# Python bytecode
+__pycache__/
