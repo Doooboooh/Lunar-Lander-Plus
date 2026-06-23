@@ -1,0 +1,34 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 60,
+    "rollout_steps": 2048,
+    "max_steps": 1000,
+    "hidden_dim": 16,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 10,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.001,
+    "hidden_layers": 3,
+    "activation": "tanh",
+    "eval_interval": 10,
+    "selection_eval_episodes": 5,
+    "normalize_observations": true,
+    "normalize_rewards": true,
+    "reward_clip": 10.0,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_blog_like_traj_near_two/trajectory/course/01_blog_vecnorm_like"
+  },
+  "metrics": {
+    "mean_return": -177.17239822565006,
+    "std_return": 19.981878558381148,
+    "min_return": -191.47178915989292,
+    "max_return": -137.73648757601276
+  }
+}

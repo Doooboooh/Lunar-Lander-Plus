@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import pickle
 from pathlib import Path
 
@@ -10,6 +11,7 @@ import torch
 from .actor_critic import ActorCriticNet
 from .common import evaluate_policy, get_device, import_gym, mlp
 from .ppo import ActorCriticNet as PPONet
+from .ppo import load_obs_normalizer
 from .q_learning import discretize
 
 
@@ -25,11 +27,22 @@ def env_dims() -> tuple[int, int]:
         env.close()
 
 
+def load_saved_config(model_dir: Path) -> dict:
+    metrics_path = model_dir / "metrics.json"
+    if not metrics_path.exists():
+        return {}
+    with metrics_path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data.get("config", {})
+
+
 def load_policy(args: argparse.Namespace):
     obs_dim, action_dim = env_dims()
+    model_dir = Path(args.model_dir)
+    saved_config = load_saved_config(model_dir)
 
     if args.algorithm == "q_learning":
-        with (Path(args.model_dir) / "q_table.pkl").open("rb") as f:
+        with (model_dir / "q_table.pkl").open("rb") as f:
             q_table = pickle.load(f)
         return lambda obs: int(np.argmax(q_table[discretize(obs)]))
 
@@ -37,17 +50,22 @@ def load_policy(args: argparse.Namespace):
     if args.algorithm == "dqn":
         model = mlp(obs_dim, action_dim, args.hidden_dim).to(device)
     elif args.algorithm == "ppo":
-        model = PPONet(obs_dim, action_dim, args.hidden_dim).to(device)
+        hidden_dim = int(saved_config.get("hidden_dim", args.hidden_dim))
+        hidden_layers = int(saved_config.get("hidden_layers", 2))
+        activation = str(saved_config.get("activation", "tanh"))
+        model = PPONet(obs_dim, action_dim, hidden_dim, hidden_layers, activation).to(device)
     else:
         model = ActorCriticNet(obs_dim, action_dim, args.hidden_dim).to(device)
 
-    checkpoint = Path(args.model_dir) / "best_policy.pt"
+    checkpoint = model_dir / "best_policy.pt"
     model.load_state_dict(torch.load(checkpoint, map_location=device))
     model.eval()
+    obs_rms = load_obs_normalizer(model_dir / "obs_norm.npz") if args.algorithm == "ppo" else None
 
     def act(obs: np.ndarray) -> int:
         with torch.no_grad():
-            obs_tensor = torch.tensor(obs, dtype=torch.float32, device=device).unsqueeze(0)
+            model_obs = obs_rms.normalize(obs) if obs_rms is not None else obs
+            obs_tensor = torch.tensor(model_obs, dtype=torch.float32, device=device).unsqueeze(0)
             if args.algorithm == "dqn":
                 logits = model(obs_tensor)
             else:

@@ -229,6 +229,20 @@ def candidate_overrides() -> list[dict]:
             "update_epochs": 4,
             "value_coef": 0.25,
         },
+        {
+            "name": "blog_vecnorm_like",
+            "hidden_dim": 16,
+            "hidden_layers": 3,
+            "activation": "tanh",
+            "lr": 3e-4,
+            "entropy_coef": 0.001,
+            "clip_coef": 0.2,
+            "update_epochs": 10,
+            "rollout_steps": 2048,
+            "minibatch_size": 64,
+            "normalize_observations": True,
+            "normalize_rewards": True,
+        },
     ]
 
 
@@ -258,8 +272,8 @@ def build_policy(model_dir: Path, cfg: PPOConfig, env_factory, device_name: str)
 
 def write_markdown(rows: list[dict], path: Path) -> None:
     lines = [
-        "| rank | config | eval mean | eval std | route completion | waypoints | final dist | lr | hidden | layers | act | entropy |",
-        "|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|",
+        "| rank | config | eval mean | eval std | route completion | waypoints | final dist | lr | hidden | layers | act | entropy | obs norm | rew norm |",
+        "|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---|---|",
     ]
     for rank, row in enumerate(rows, start=1):
         cfg = row["config"]
@@ -270,7 +284,9 @@ def write_markdown(rows: list[dict], path: Path) -> None:
         lines.append(
             f"| {rank} | {row['name']} | {row['metrics']['mean_return']:.2f} | {row['metrics']['std_return']:.2f} | "
             f"{route} | {waypoints} | {final_dist} | {cfg['lr']:.0e} | {cfg['hidden_dim']} | "
-            f"{cfg['hidden_layers']} | {cfg['activation']} | {cfg['entropy_coef']:.3f} |"
+            f"{cfg['hidden_layers']} | {cfg['activation']} | {cfg['entropy_coef']:.3f} | "
+            f"{'Y' if cfg.get('normalize_observations', False) else 'N'} | "
+            f"{'Y' if cfg.get('normalize_rewards', False) else 'N'} |"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

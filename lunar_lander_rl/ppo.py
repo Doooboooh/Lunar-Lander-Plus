@@ -45,6 +45,26 @@ class RunningMeanStd:
         return np.clip(normalized, -clip, clip)
 
 
+class RewardNormalizer:
+    """VecNormalize-style reward scaling using running discounted returns."""
+
+    def __init__(self, gamma: float, clip: float = 10.0) -> None:
+        self.gamma = float(gamma)
+        self.clip = float(clip)
+        self.return_rms = RunningMeanStd(())
+        self.running_return = 0.0
+
+    def normalize(self, reward: float, done: bool) -> float:
+        self.running_return = self.running_return * self.gamma * (1.0 - float(done)) + float(reward)
+        self.return_rms.update(np.array([self.running_return], dtype=np.float64))
+        scale = float(np.sqrt(self.return_rms.var + 1e-8))
+        normalized = float(reward) / scale
+        return float(np.clip(normalized, -self.clip, self.clip))
+
+    def reset(self) -> None:
+        self.running_return = 0.0
+
+
 def save_obs_normalizer(path, obs_rms: RunningMeanStd | None) -> None:
     if obs_rms is None:
         return
@@ -133,6 +153,8 @@ class PPOConfig:
     eval_interval: int = 10
     selection_eval_episodes: int = 3
     normalize_observations: bool = True
+    normalize_rewards: bool = False
+    reward_clip: float = 10.0
     seed: int = 42
     eval_episodes: int = 5
     device: str = "auto"
@@ -174,11 +196,14 @@ def train(
     model = ActorCriticNet(obs_dim, action_dim, cfg.hidden_dim, cfg.hidden_layers, cfg.activation).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr)
     obs_rms = RunningMeanStd((obs_dim,)) if cfg.normalize_observations else None
+    reward_normalizer = RewardNormalizer(cfg.gamma, cfg.reward_clip) if cfg.normalize_rewards else None
     history: list[dict[str, float]] = []
     best_eval = float("-inf")
     obs, _ = env.reset(seed=cfg.seed)
     if obs_rms is not None:
         obs_rms.update(obs)
+    if reward_normalizer is not None:
+        reward_normalizer.reset()
     episode_return = 0.0
     completed_episodes = 0
 
@@ -198,11 +223,14 @@ def train(
                     action, logprob, value = model.act(obs_tensor)
                 next_obs, reward, terminated, truncated, _ = env.step(int(action.item()))
                 done = terminated or truncated
+                reward_for_update = (
+                    reward_normalizer.normalize(float(reward), done) if reward_normalizer is not None else float(reward)
+                )
 
                 obs_buf.append(obs)
                 action_buf.append(int(action.item()))
                 logprob_buf.append(float(logprob.item()))
-                reward_buf.append(float(reward))
+                reward_buf.append(reward_for_update)
                 done_buf.append(float(done))
                 value_buf.append(float(value.item()))
                 episode_return += float(reward)
@@ -221,6 +249,8 @@ def train(
                     )
                     episode_return = 0.0
                     obs, _ = env.reset(seed=cfg.seed + completed_episodes)
+                    if reward_normalizer is not None:
+                        reward_normalizer.reset()
 
             with torch.no_grad():
                 next_model_obs = obs_rms.normalize(obs) if obs_rms is not None else obs
@@ -328,10 +358,19 @@ def parse_args() -> PPOConfig:
     parser.add_argument("--entropy-coef", type=float, default=PPOConfig.entropy_coef)
     parser.add_argument("--eval-interval", type=int, default=PPOConfig.eval_interval)
     parser.add_argument("--selection-eval-episodes", type=int, default=PPOConfig.selection_eval_episodes)
+    parser.add_argument("--normalize-observations", dest="normalize_observations", action="store_true")
+    parser.add_argument("--no-normalize-observations", dest="normalize_observations", action="store_false")
+    parser.add_argument("--normalize-rewards", dest="normalize_rewards", action="store_true")
+    parser.add_argument("--no-normalize-rewards", dest="normalize_rewards", action="store_false")
+    parser.add_argument("--reward-clip", type=float, default=PPOConfig.reward_clip)
     parser.add_argument("--eval-episodes", type=int, default=PPOConfig.eval_episodes)
     parser.add_argument("--seed", type=int, default=PPOConfig.seed)
     parser.add_argument("--device", default=PPOConfig.device)
     parser.add_argument("--output-dir", default=PPOConfig.output_dir)
+    parser.set_defaults(
+        normalize_observations=PPOConfig.normalize_observations,
+        normalize_rewards=PPOConfig.normalize_rewards,
+    )
     args = parser.parse_args()
     return PPOConfig(
         updates=args.updates,
@@ -343,6 +382,9 @@ def parse_args() -> PPOConfig:
         entropy_coef=args.entropy_coef,
         eval_interval=args.eval_interval,
         selection_eval_episodes=args.selection_eval_episodes,
+        normalize_observations=args.normalize_observations,
+        normalize_rewards=args.normalize_rewards,
+        reward_clip=args.reward_clip,
         eval_episodes=args.eval_episodes,
         seed=args.seed,
         device=args.device,

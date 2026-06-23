@@ -2,7 +2,7 @@
 
 本文档用于持续记录基础 `LunarLander-v3` 任务上的 PPO 优化过程，包括已经做过的尝试、失败现象、当前判断和下一步优先方向。后续若继续优化基础任务上的 PPO，请优先更新本文档，而不是只把结果散落在 `outputs/` 目录里。
 
-更新时间：`2026-06-23`
+更新时间：`2026-06-23`（已补充论坛方案复现结果）
 
 ## 1. 当前目标
 
@@ -12,7 +12,11 @@
 2. 至少达到“稳定降落趋势明显，独立评估平均回报大于 `100`”。
 3. 在基础环境门槛未达到之前，不继续把 PPO 作为拓展 waypoint 环境的主力方案。
 
-目前结论：**这个门槛还没有达到。**
+目前最新结论：
+
+- 旧 PPO 方案没有达到这个门槛。
+- 参考 PyTorch 论坛里的改进思路后，已经训练出一个基础环境平均回报大于 `100` 的 PPO。
+- 但它还不能算“完全稳定 solved”，因为跨 seed 波动仍然明显。
 
 ## 2. 当前基线问题
 
@@ -217,6 +221,73 @@
 - 更保守更新没有改善结果，反而更差。
 - 说明当前问题不只是“更新太猛”。
 
+### 4.7 第七阶段：复现论坛思路，加入 reward normalization 并改成小型 tanh 网络
+
+参考来源：
+
+- PyTorch 论坛讨论帖：`https://discuss.pytorch.org/t/ppo-learning-poorly-on-lunarlander-v3/223951`
+
+从讨论帖提取出的关键信息：
+
+1. 高性能提升的关键不是更大的网络，而是 **持续更新的 observation + reward normalization**。
+2. 讨论中提到的高性能配置更接近：
+   - `3 x 16` 的 `tanh` MLP
+   - `lr = 3e-4`
+   - `entropy_coef = 1e-3`
+   - `clip = 0.2`
+   - `update_epochs = 10`
+   - `minibatch_size = 64`
+   - `frames/rollout ≈ 2048`
+3. 帖主明确回帖说，自己后来发现真正让 PPO 学起来的是 `VecNorm` 对 **观测和奖励** 的持续归一化。
+
+我们据此新增了一个搜索候选：
+
+- `blog_vecnorm_like`
+
+配置为：
+
+| 参数 | 值 |
+|---|---:|
+| hidden dim | 16 |
+| hidden layers | 3 |
+| activation | tanh |
+| lr | 3e-4 |
+| entropy coef | 0.001 |
+| clip coef | 0.2 |
+| rollout steps | 2048 |
+| update epochs | 10 |
+| minibatch size | 64 |
+| normalize observations | true |
+| normalize rewards | true |
+
+结果目录：
+
+- [outputs/ppo_search_blog_like/base/course/summary.md](/workspace/volume/doubohan-disk2/proj/Lunar-Lander-Plus/outputs/ppo_search_blog_like/base/course/summary.md)
+- [outputs/ppo_search_blog_like/base/course/01_blog_vecnorm_like/metrics.json](/workspace/volume/doubohan-disk2/proj/Lunar-Lander-Plus/outputs/ppo_search_blog_like/base/course/01_blog_vecnorm_like/metrics.json)
+- [outputs/ppo_search_blog_like/base/course/01_blog_vecnorm_like/search_result.json](/workspace/volume/doubohan-disk2/proj/Lunar-Lander-Plus/outputs/ppo_search_blog_like/base/course/01_blog_vecnorm_like/search_result.json)
+
+结果解读：
+
+1. 训练过程里的独立选模评估在 update 50-60 已经上升到约 `228.6` 和 `235.7`。
+2. 训练器内部 5 回合评估记录为：
+   - `mean_return = 225.96`
+3. 搜索脚本在另一组测试 seed 上的 5 回合复评为：
+   - `mean_return = 158.89`
+4. 额外补跑 20 回合独立评估结果为：
+   - `mean_return = 163.37`
+   - `std_return = 95.93`
+   - `min_return = -36.70`
+   - `max_return = 259.83`
+
+结论：
+
+- 这是当前仓库里**第一个明确跨过“基础环境平均回报 > 100”门槛的 PPO**。
+- 论坛里的判断基本成立：**reward normalization 是高影响改动**。
+- 同时也说明我们之前一直卡住，并不只是“超参没搜到”，而是关键稳定化机制缺失。
+- 但这个模型仍然存在跨 seed 波动，因此更准确的表述是：
+  - 已经达到“可用且明显优于旧 PPO”
+  - 但还没有达到“稳定 solved”
+
 ## 5. 已确认的失败方向
 
 下面这些方向已经有比较明确的负面证据，后续除非改动了 PPO 的更底层机制，否则不建议优先重复投入时间：
@@ -228,15 +299,17 @@
 
 ## 6. 当前最靠谱的基础 PPO 候选
 
-如果必须从目前尝试里选一个“相对最值得继续”的基础 PPO 起点，优先顺序如下：
+如果从目前尝试里选一个“最值得继续”的基础 PPO 起点，优先顺序已经更新为：
 
-1. `tanh_256_low_lr`
-2. `tanh_256_very_low_entropy`
-3. `relu_128_low_entropy`
+1. `blog_vecnorm_like`
+2. `tanh_256_low_lr`
+3. `tanh_256_very_low_entropy`
+4. `relu_128_low_entropy`
 
 原因：
 
-- `tanh_256_low_lr` 在更长训练里最稳，虽然没有达到目标。
+- `blog_vecnorm_like` 是目前唯一稳定跨过 `100+` 门槛的 PPO。
+- `tanh_256_low_lr` 仍然是“旧实现框架下最稳的对照组”。
 - `tanh_256_very_low_entropy` 和它表现接近，可以作为同族对照。
 - `relu_128_low_entropy` 小预算时效果好，但长训练更容易崩。
 
@@ -253,19 +326,22 @@
 
 截至 `2026-06-23`，可以给出下面这个判断：
 
-**当前仓库里的 PPO 还不适合直接作为拓展任务主算法。**
+**当前仓库里的旧 PPO 版本不适合直接作为拓展任务主算法，但论坛方案启发下的新 PPO 已经在基础环境里达到可用水平。**
 
-在基础环境里都还没有达到：
+更细一点地说：
 
-- 稳定正回报
-- 独立评估平均回报 `> 100`
-- 明显优于当前 DQN 基线
+- 旧 PPO：没有达到基础门槛。
+- 新 `blog_vecnorm_like` PPO：已经达到基础环境 `> 100` 门槛。
+- 但它还没有达到“低波动、跨 seed 很稳”的程度。
 
-因此，后续 PPO 工作必须继续留在基础环境，直到先把这个门槛过掉。
+因此，后续 PPO 工作可以分两阶段：
+
+1. 先以 `blog_vecnorm_like` 为基础，继续把基础环境稳定性做上去。
+2. 之后再把它迁移到拓展 waypoint 环境。
 
 ## 9. 下一步优先方向
 
-后续最值得尝试的不是继续盲搜同类超参，而是补更标准的 PPO 稳定化机制。建议优先级如下：
+后续最值得尝试的，不再是回到旧 PPO 上盲搜，而是以 `blog_vecnorm_like` 为起点继续补稳定化机制。建议优先级如下：
 
 1. 多环境并行 rollout
 2. learning rate annealing
@@ -278,9 +354,9 @@
 
 1. 先在当前 PPO 训练器里加入并行环境。
 2. 再加入学习率退火和 return normalization。
-3. 以 `tanh_256_low_lr` 为基础配置重新跑基础环境。
-4. 目标是先拿到一个独立评估 `mean_return > 100` 的基础 PPO。
-5. 只有达到这个门槛后，才继续进入拓展 waypoint 环境探索。
+3. 以 `blog_vecnorm_like` 为基础配置重新跑多 seed 基础环境。
+4. 目标从“先过 100”升级为“多 seed 下稳定大于 150，且较少坠回负分”。
+5. 达到这个更高门槛后，再继续进入拓展 waypoint 环境探索。
 
 ## 10. 推荐复现实验命令
 
@@ -309,6 +385,20 @@ python -m lunar_lander_rl.run_ppo_search \
   --output-dir outputs/ppo_search_norm_base
 ```
 
+论坛方案复现实验命令：
+
+```bash
+python -m lunar_lander_rl.run_ppo_search \
+  --mode base \
+  --profile course \
+  --names blog_vecnorm_like \
+  --updates 60 \
+  --eval-interval 10 \
+  --selection-eval-episodes 5 \
+  --eval-episodes 5 \
+  --output-dir outputs/ppo_search_blog_like
+```
+
 当前不建议继续优先运行的方向：
 
 ```bash
@@ -318,11 +408,14 @@ python -m lunar_lander_rl.run_ppo_search \
   ...
 ```
 
-原因：基础环境门槛尚未通过。
+原因：虽然基础环境门槛已经通过，但优先级仍低于“先把基础 PPO 做稳”。
 
 ## 11. 结论
 
-这轮工作最大的价值，不是已经找到了一个足够好的 PPO，而是把“哪些方向不够用”排得比较清楚了。
+这轮工作的价值已经有两层：
+
+1. 排清楚了很多“只调超参但不补稳定化机制”的无效方向。
+2. 找到了一个确实能把基础 PPO 拉到 `100+` 的 forum-inspired 配置。
 
 已经确认的结论是：
 
@@ -330,6 +423,6 @@ python -m lunar_lander_rl.run_ppo_search \
 - 单纯网络结构搜索不够。
 - 单纯拉长训练不够。
 - 观测归一化值得保留，但不是决定性修复。
+- **reward normalization + 小型 tanh 网络 + 更接近标准 PPO 的训练配置，是当前最有效的突破口。**
 
-后续若继续优化 PPO，请默认从“增强 PPO 实现稳定性”开始，而不是再做一轮同质化参数搜索。
-
+后续若继续优化 PPO，请默认从 `blog_vecnorm_like` 继续增强稳定性，而不是再回到旧 PPO 上做一轮同质化参数搜索。

@@ -1,0 +1,52 @@
+{
+  "name": "blog_vecnorm_like",
+  "rank_score": -84.0736649474254,
+  "config": {
+    "updates": 60,
+    "rollout_steps": 2048,
+    "max_steps": 1000,
+    "hidden_dim": 16,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 10,
+    "minibatch_size": 64,
+    "value_coef": 0.5,
+    "entropy_coef": 0.001,
+    "hidden_layers": 3,
+    "activation": "tanh",
+    "eval_interval": 10,
+    "selection_eval_episodes": 5,
+    "normalize_observations": true,
+    "normalize_rewards": true,
+    "reward_clip": 10.0,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "auto",
+    "output_dir": "outputs/ppo_search_blog_like_traj/trajectory/course/01_blog_vecnorm_like"
+  },
+  "metrics": {
+    "mean_return": -84.0736649474254,
+    "std_return": 181.0285311334665,
+    "min_return": -311.1906345341332,
+    "max_return": 82.16805231130985
+  },
+  "trajectory_metrics": {
+    "episodes": 5.0,
+    "mean_return": -210.35947920101893,
+    "std_return": 164.49597405388448,
+    "min_return": -308.62572543152635,
+    "max_return": 117.47977382232426,
+    "mean_waypoints_completed": 0.2,
+    "max_waypoints_completed": 1.0,
+    "route_completion_rate": 0.2,
+    "landed_after_route_rate": 0.0,
+    "touchdown_after_route_rate": 0.2,
+    "settled_after_route_rate": 0.0,
+    "mean_final_target_distance": 1.8178656935691833,
+    "mean_episode_length": 156.6,
+    "waypoint_count": 1.0
+  },
+  "output_dir": "outputs/ppo_search_blog_like_traj/trajectory/course/01_blog_vecnorm_like"
+}
