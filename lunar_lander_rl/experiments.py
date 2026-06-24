@@ -8,7 +8,7 @@ from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+from stable_baselines3.common.vec_env import DummyVecEnv, VecMonitor, VecNormalize
 
 from lunar_lander_rl.config import dump_json
 from lunar_lander_rl.envs import register_custom_lunar_envs
@@ -21,14 +21,17 @@ ALGORITHMS = {
 }
 
 
-def make_env(env_id: str, seed: int | None = None, render_mode: str | None = None) -> gym.Env:
+def make_raw_env(env_id: str, seed: int | None = None, render_mode: str | None = None) -> gym.Env:
     register_custom_lunar_envs()
     env = gym.make(env_id, render_mode=render_mode)
-    env = Monitor(env)
     if seed is not None:
         env.reset(seed=seed)
         env.action_space.seed(seed)
     return env
+
+
+def make_env(env_id: str, seed: int | None = None, render_mode: str | None = None) -> gym.Env:
+    return Monitor(make_raw_env(env_id, seed=seed, render_mode=render_mode))
 
 
 def make_monitored_env(
@@ -38,17 +41,13 @@ def make_monitored_env(
     render_mode: str | None = None,
     monitor_dir: str | Path | None = None,
 ) -> gym.Env:
-    register_custom_lunar_envs()
-    env = gym.make(env_id, render_mode=render_mode)
+    env = make_raw_env(env_id, seed=seed, render_mode=render_mode)
     filename = None
     if monitor_dir is not None:
         monitor_dir = Path(monitor_dir)
         monitor_dir.mkdir(parents=True, exist_ok=True)
         filename = str(monitor_dir / "train")
     env = Monitor(env, filename=filename)
-    if seed is not None:
-        env.reset(seed=seed)
-        env.action_space.seed(seed)
     return env
 
 
@@ -56,6 +55,7 @@ def make_vec_env(
     env_id: str,
     seed: int | None = None,
     *,
+    n_envs: int = 1,
     render_mode: str | None = None,
     vec_normalize: bool = False,
     norm_obs: bool = True,
@@ -63,16 +63,23 @@ def make_vec_env(
     clip_obs: float = 10.0,
     monitor_dir: str | Path | None = None,
 ):
-    env = DummyVecEnv(
-        [
-            lambda: make_monitored_env(
-                env_id,
-                seed=seed,
-                render_mode=render_mode,
-                monitor_dir=monitor_dir,
-            )
-        ]
-    )
+    if n_envs < 1:
+        raise ValueError(f"n_envs must be >= 1, got {n_envs}")
+
+    def make_ranked_env(rank: int):
+        def _init() -> gym.Env:
+            env_seed = None if seed is None else seed + rank
+            return make_raw_env(env_id, seed=env_seed, render_mode=render_mode)
+
+        return _init
+
+    env = DummyVecEnv([make_ranked_env(i) for i in range(n_envs)])
+    monitor_filename = None
+    if monitor_dir is not None:
+        monitor_dir = Path(monitor_dir)
+        monitor_dir.mkdir(parents=True, exist_ok=True)
+        monitor_filename = str(monitor_dir / "train")
+    env = VecMonitor(env, filename=monitor_filename)
     if vec_normalize:
         env = VecNormalize(env, norm_obs=norm_obs, norm_reward=norm_reward, clip_obs=clip_obs)
     return env
@@ -90,11 +97,13 @@ def train_from_config(config: dict[str, Any], output_dir: str | Path) -> Path:
     tensorboard_dir = output_dir / "tensorboard"
 
     seed = int(config.get("seed", 42))
+    n_envs = int(config.get("n_envs", 1))
     vec_normalize_config = dict(config.get("vec_normalize", {}))
     use_vec_normalize = bool(vec_normalize_config.pop("enabled", False))
     env = make_vec_env(
         config["env_id"],
         seed=seed,
+        n_envs=n_envs,
         vec_normalize=use_vec_normalize,
         monitor_dir=monitor_dir,
         **vec_normalize_config,
@@ -134,6 +143,7 @@ def train_from_config(config: dict[str, Any], output_dir: str | Path) -> Path:
             "algorithm": algo_name,
             "env_id": config["env_id"],
             "seed": seed,
+            "n_envs": n_envs,
             "total_timesteps": int(config["total_timesteps"]),
             "eval_episodes": eval_episodes,
             "mean_reward": mean_reward,
