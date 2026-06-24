@@ -1,0 +1,6 @@
+{
+  "algorithm": "SB3-a2c",
+  "timesteps": 200000,
+  "eval_mean_return": 41.3600998,
+  "eval_std_return": 274.99852250542693
+}

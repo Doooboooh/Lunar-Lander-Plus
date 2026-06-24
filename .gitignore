@@ -11,9 +11,11 @@ stable-baselines3/
 # 训练产物 / 模型 / 大文件（按需保留本地，不入库）
 outputs/**/*.pt
 outputs/**/*.pkl
+outputs/**/*.zip
 outputs/**/*.gif
 outputs/**/*.png
 outputs/**/*.log
+outputs/**/*.csv
 outputs/**/*.mp4
 
 # 临时

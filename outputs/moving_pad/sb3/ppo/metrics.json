@@ -1,0 +1,6 @@
+{
+  "algorithm": "SB3-ppo",
+  "timesteps": 200000,
+  "eval_mean_return": 888.1296548,
+  "eval_std_return": 298.45801246984644
+}

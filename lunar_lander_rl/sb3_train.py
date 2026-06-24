@@ -19,6 +19,7 @@ import gymnasium as gym
 
 from stable_baselines3 import DQN, PPO, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.monitor import Monitor
 
 from .common import register_moving_pad
 
@@ -26,8 +27,11 @@ ENV_ID = register_moving_pad()
 ALGOS = {"dqn": DQN, "ppo": PPO, "a2c": A2C}
 
 
-def make_env(seed: int = 0):
+def make_env(seed: int = 0, monitor_log: str = None):
+    """用 Monitor 包装环境，记录每个 episode 的 reward（供画训练曲线）。"""
     env = gym.make(ENV_ID)
+    if monitor_log:
+        env = Monitor(env, filename=monitor_log)
     env.reset(seed=seed)
     env.action_space.seed(seed)
     return env
@@ -40,7 +44,7 @@ def train(algo: str, timesteps: int, seed: int = 0, output_dir: str = "outputs/m
     out = Path(output_dir) / algo
     out.mkdir(parents=True, exist_ok=True)
 
-    env = make_env(seed)
+    env = make_env(seed, monitor_log=str(out / "monitor"))
     print(f"[SB3-{algo}] 环境={ENV_ID} timesteps={timesteps} device={device}")
 
     # 各算法共用 MlpPolicy（SB3 默认中等网络），学习率/批大小按算法合理默认
