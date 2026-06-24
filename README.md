@@ -30,7 +30,11 @@
 ## 快速开始
 
 ```bash
-pip install -r ../requirements.txt
+python scripts/evaluate.py \
+  --algorithm ppo \
+  --model outputs/base_ppo/ppo_BaseLunarLander-v0.zip \
+  --env BaseLunarLander-v0 \
+  --vec-normalize outputs/base_ppo/vec_normalize.pkl
 ```
 
 检查自定义环境：
