@@ -1,4 +1,6 @@
 numpy
 torch
 imageio
+matplotlib
 gymnasium[classic-control,box2d]>=1.0.0
+stable-baselines3[extra]

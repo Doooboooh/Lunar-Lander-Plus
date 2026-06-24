@@ -1,0 +1,182 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import gymnasium as gym
+from stable_baselines3 import A2C, DQN, PPO
+from stable_baselines3.common.base_class import BaseAlgorithm
+from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+
+from lunar_lander_rl.config import dump_json
+from lunar_lander_rl.envs import register_custom_lunar_envs
+
+
+ALGORITHMS = {
+    "a2c": A2C,
+    "dqn": DQN,
+    "ppo": PPO,
+}
+
+
+def make_env(env_id: str, seed: int | None = None, render_mode: str | None = None) -> gym.Env:
+    register_custom_lunar_envs()
+    env = gym.make(env_id, render_mode=render_mode)
+    env = Monitor(env)
+    if seed is not None:
+        env.reset(seed=seed)
+        env.action_space.seed(seed)
+    return env
+
+
+def make_monitored_env(
+    env_id: str,
+    *,
+    seed: int | None = None,
+    render_mode: str | None = None,
+    monitor_dir: str | Path | None = None,
+) -> gym.Env:
+    register_custom_lunar_envs()
+    env = gym.make(env_id, render_mode=render_mode)
+    filename = None
+    if monitor_dir is not None:
+        monitor_dir = Path(monitor_dir)
+        monitor_dir.mkdir(parents=True, exist_ok=True)
+        filename = str(monitor_dir / "train")
+    env = Monitor(env, filename=filename)
+    if seed is not None:
+        env.reset(seed=seed)
+        env.action_space.seed(seed)
+    return env
+
+
+def make_vec_env(
+    env_id: str,
+    seed: int | None = None,
+    *,
+    render_mode: str | None = None,
+    vec_normalize: bool = False,
+    norm_obs: bool = True,
+    norm_reward: bool = True,
+    clip_obs: float = 10.0,
+    monitor_dir: str | Path | None = None,
+):
+    env = DummyVecEnv(
+        [
+            lambda: make_monitored_env(
+                env_id,
+                seed=seed,
+                render_mode=render_mode,
+                monitor_dir=monitor_dir,
+            )
+        ]
+    )
+    if vec_normalize:
+        env = VecNormalize(env, norm_obs=norm_obs, norm_reward=norm_reward, clip_obs=clip_obs)
+    return env
+
+
+def train_from_config(config: dict[str, Any], output_dir: str | Path) -> Path:
+    algo_name = config["algorithm"].lower()
+    if algo_name not in ALGORITHMS:
+        supported = ", ".join(sorted(ALGORITHMS))
+        raise ValueError(f"Unsupported algorithm {algo_name!r}; choose one of: {supported}")
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    monitor_dir = output_dir / "monitor"
+    tensorboard_dir = output_dir / "tensorboard"
+
+    seed = int(config.get("seed", 42))
+    vec_normalize_config = dict(config.get("vec_normalize", {}))
+    use_vec_normalize = bool(vec_normalize_config.pop("enabled", False))
+    env = make_vec_env(
+        config["env_id"],
+        seed=seed,
+        vec_normalize=use_vec_normalize,
+        monitor_dir=monitor_dir,
+        **vec_normalize_config,
+    )
+    model_kwargs = dict(config.get("model_kwargs", {}))
+    model_kwargs.setdefault("seed", seed)
+    model_kwargs.setdefault("verbose", 1)
+    model_kwargs.setdefault("tensorboard_log", str(tensorboard_dir))
+
+    model_cls = ALGORITHMS[algo_name]
+    model = model_cls("MlpPolicy", env, **model_kwargs)
+    model.learn(
+        total_timesteps=int(config["total_timesteps"]),
+        tb_log_name=str(config.get("name", f"{algo_name}_{config['env_id']}")),
+    )
+
+    model_path = output_dir / f"{algo_name}_{config['env_id']}.zip"
+    model.save(model_path)
+    norm_path = None
+    if use_vec_normalize:
+        norm_path = output_dir / "vec_normalize.pkl"
+        env.save(norm_path)
+
+    eval_episodes = int(config.get("eval_episodes", 10))
+    if use_vec_normalize:
+        env.training = False
+        env.norm_reward = False
+    mean_reward, std_reward = evaluate_model(
+        model=model,
+        env_id=config["env_id"],
+        episodes=eval_episodes,
+        seed=seed + 1000,
+        vec_normalize_path=norm_path,
+    )
+    dump_json(
+        {
+            "algorithm": algo_name,
+            "env_id": config["env_id"],
+            "seed": seed,
+            "total_timesteps": int(config["total_timesteps"]),
+            "eval_episodes": eval_episodes,
+            "mean_reward": mean_reward,
+            "std_reward": std_reward,
+            "model_path": str(model_path),
+            "vec_normalize_path": str(norm_path) if norm_path is not None else None,
+            "monitor_dir": str(monitor_dir),
+            "tensorboard_dir": str(tensorboard_dir),
+        },
+        output_dir / "metrics.json",
+    )
+    env.close()
+    return model_path
+
+
+def load_model(algorithm: str, model_path: str | Path) -> BaseAlgorithm:
+    algo_name = algorithm.lower()
+    if algo_name not in ALGORITHMS:
+        supported = ", ".join(sorted(ALGORITHMS))
+        raise ValueError(f"Unsupported algorithm {algo_name!r}; choose one of: {supported}")
+    return ALGORITHMS[algo_name].load(model_path)
+
+
+def evaluate_model(
+    *,
+    model: BaseAlgorithm,
+    env_id: str,
+    episodes: int = 10,
+    seed: int = 42,
+    vec_normalize_path: str | Path | None = None,
+) -> tuple[float, float]:
+    if vec_normalize_path is None:
+        env = make_env(env_id, seed=seed)
+    else:
+        raw_env = make_vec_env(env_id, seed=seed)
+        env = VecNormalize.load(vec_normalize_path, raw_env)
+        env.training = False
+        env.norm_reward = False
+    mean_reward, std_reward = evaluate_policy(
+        model,
+        env,
+        n_eval_episodes=episodes,
+        deterministic=True,
+    )
+    env.close()
+    return float(mean_reward), float(std_reward)

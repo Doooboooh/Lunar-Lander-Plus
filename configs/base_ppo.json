@@ -1,0 +1,20 @@
+{
+  "name": "base_ppo",
+  "env_id": "BaseLunarLander-v0",
+  "algorithm": "ppo",
+  "seed": 42,
+  "total_timesteps": 10000,
+  "eval_episodes": 5,
+  "vec_normalize": {
+    "enabled": true,
+    "norm_obs": true,
+    "norm_reward": true,
+    "clip_obs": 10.0
+  },
+  "model_kwargs": {
+    "learning_rate": 0.0003,
+    "n_steps": 1024,
+    "batch_size": 64,
+    "gamma": 0.99
+  }
+}
