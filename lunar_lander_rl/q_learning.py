@@ -8,7 +8,9 @@ from pathlib import Path
 
 import numpy as np
 
-from .common import ensure_dir, evaluate_policy, make_env, save_history, save_json, set_seed
+from .common import ensure_dir, evaluate_policy, make_env, save_history, save_json, set_seed, register_moving_pad
+
+register_moving_pad()
 
 
 @dataclass
@@ -23,15 +25,30 @@ class QLearningConfig:
     seed: int = 42
     eval_episodes: int = 5
     output_dir: str = "outputs/q_learning"
+    env_id: str = "LunarLander-v3"
 
 
-OBS_LOW = np.array([-1.5, -0.1, -2.0, -2.0, -np.pi, -3.0, 0.0, 0.0])
-OBS_HIGH = np.array([1.5, 1.5, 2.0, 2.0, np.pi, 3.0, 1.0, 1.0])
-N_BINS = np.array([8, 8, 8, 8, 8, 8, 2, 2])
+# 基础 8 维观测的分箱（标准 LunarLander）
+OBS_LOW_BASE = np.array([-1.5, -0.1, -2.0, -2.0, -np.pi, -3.0, 0.0, 0.0])
+OBS_HIGH_BASE = np.array([1.5, 1.5, 2.0, 2.0, np.pi, 3.0, 1.0, 1.0])
+N_BINS_BASE = np.array([8, 8, 8, 8, 8, 8, 2, 2])
+# 移动平台额外 2 维（平台相对位置，归一化范围较大，用 inf 由 clip 处理）
+EXTRA_LOW = np.array([-2.0, -2.0])
+EXTRA_HIGH = np.array([2.0, 2.0])
+EXTRA_BINS = np.array([8, 8])
+
+OBS_LOW = np.concatenate([OBS_LOW_BASE, EXTRA_LOW])
+OBS_HIGH = np.concatenate([OBS_HIGH_BASE, EXTRA_HIGH])
+N_BINS = np.concatenate([N_BINS_BASE, EXTRA_BINS])
 
 
 def discretize(obs: np.ndarray) -> tuple[int, ...]:
-    clipped = np.clip(obs, OBS_LOW, OBS_HIGH)
+    # 只取前 len(N_BINS) 维分箱（多余维度忽略，不足则用 0 补）
+    n = len(N_BINS)
+    obs = np.asarray(obs, dtype=np.float64)
+    if len(obs) < n:
+        obs = np.concatenate([obs, np.zeros(n - len(obs))])
+    clipped = np.clip(obs[:n], OBS_LOW, OBS_HIGH)
     ratios = (clipped - OBS_LOW) / (OBS_HIGH - OBS_LOW)
     bins = np.floor(ratios * N_BINS).astype(np.int64)
     bins = np.clip(bins, 0, N_BINS - 1)
@@ -45,7 +62,7 @@ def epsilon_for_episode(episode: int, cfg: QLearningConfig) -> float:
 def train(cfg: QLearningConfig) -> dict[str, float]:
     set_seed(cfg.seed)
     output_dir = ensure_dir(cfg.output_dir)
-    env = make_env(seed=cfg.seed)
+    env = make_env(seed=cfg.seed, env_id=cfg.env_id)
     q_table = np.zeros((*N_BINS, env.action_space.n), dtype=np.float32)
     history: list[dict[str, float]] = []
     best_return = float("-inf")
@@ -98,7 +115,7 @@ def train(cfg: QLearningConfig) -> dict[str, float]:
     with (output_dir / "q_table.pkl").open("wb") as f:
         pickle.dump(q_table, f)
 
-    metrics = evaluate_policy(lambda obs: int(np.argmax(q_table[discretize(obs)])), cfg.eval_episodes, seed=cfg.seed + 10000)
+    metrics = evaluate_policy(lambda obs: int(np.argmax(q_table[discretize(obs)])), cfg.eval_episodes, seed=cfg.seed + 10000, env_id=cfg.env_id)
     save_history(history, output_dir)
     save_json({"algorithm": "Q-Learning", "config": cfg, "metrics": metrics}, output_dir / "metrics.json")
     print(f"[Q-Learning] eval mean return: {metrics['mean_return']:.1f}")
@@ -111,12 +128,15 @@ def parse_args() -> QLearningConfig:
     parser.add_argument("--eval-episodes", type=int, default=QLearningConfig.eval_episodes)
     parser.add_argument("--seed", type=int, default=QLearningConfig.seed)
     parser.add_argument("--output-dir", default=QLearningConfig.output_dir)
+    parser.add_argument("--env-id", default=QLearningConfig.env_id,
+                        help="环境 id，默认 LunarLander-v3；移动平台用 MovingPadLunarLander-v0")
     args = parser.parse_args()
     return QLearningConfig(
         episodes=args.episodes,
         eval_episodes=args.eval_episodes,
         seed=args.seed,
         output_dir=args.output_dir,
+        env_id=args.env_id,
     )
 
 

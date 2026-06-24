@@ -1,0 +1,22 @@
+{
+  "algorithm": "MAPPO",
+  "config": {
+    "updates": 400,
+    "rollout_steps": 1024,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 256,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "cpu",
+    "output_dir": "outputs/multi_lander/mappo"
+  },
+  "best_score": -1728.826468991545
+}

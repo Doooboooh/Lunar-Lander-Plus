@@ -11,7 +11,10 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from .common import ensure_dir, evaluate_policy, get_device, make_env, mlp, save_history, save_json, set_seed
+from .common import ensure_dir, evaluate_policy, get_device, make_env, mlp, save_history, save_json, set_seed, register_moving_pad
+
+# 注册移动平台变体环境（幂等），供 --env-id 指定
+register_moving_pad()
 
 
 Transition = namedtuple("Transition", ["state", "action", "reward", "next_state", "done"])
@@ -55,6 +58,7 @@ class DQNConfig:
     eval_episodes: int = 5
     device: str = "auto"
     output_dir: str = "outputs/dqn"
+    env_id: str = "LunarLander-v3"
 
 
 def epsilon_by_step(step: int, cfg: DQNConfig) -> float:
@@ -65,7 +69,7 @@ def train(cfg: DQNConfig) -> dict[str, float]:
     set_seed(cfg.seed)
     device = get_device(cfg.device)
     output_dir = ensure_dir(cfg.output_dir)
-    env = make_env(seed=cfg.seed)
+    env = make_env(seed=cfg.seed, env_id=cfg.env_id)
     obs_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
@@ -147,7 +151,7 @@ def train(cfg: DQNConfig) -> dict[str, float]:
             obs_tensor = torch.tensor(obs, dtype=torch.float32, device=device).unsqueeze(0)
             return int(policy(obs_tensor).argmax(dim=1).item())
 
-    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000)
+    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000, env_id=cfg.env_id)
     save_history(history, output_dir)
     save_json({"algorithm": "DQN", "config": cfg, "metrics": metrics}, output_dir / "metrics.json")
     print(f"[DQN] eval mean return: {metrics['mean_return']:.1f}")
@@ -161,6 +165,8 @@ def parse_args() -> DQNConfig:
     parser.add_argument("--seed", type=int, default=DQNConfig.seed)
     parser.add_argument("--device", default=DQNConfig.device)
     parser.add_argument("--output-dir", default=DQNConfig.output_dir)
+    parser.add_argument("--env-id", default=DQNConfig.env_id,
+                        help="环境 id，默认 LunarLander-v3；移动平台用 MovingPadLunarLander-v0")
     args = parser.parse_args()
     return DQNConfig(
         episodes=args.episodes,
@@ -168,6 +174,7 @@ def parse_args() -> DQNConfig:
         seed=args.seed,
         device=args.device,
         output_dir=args.output_dir,
+        env_id=args.env_id,
     )
 
 

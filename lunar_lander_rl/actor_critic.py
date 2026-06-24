@@ -9,7 +9,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
-from .common import ensure_dir, evaluate_policy, get_device, make_env, save_history, save_json, set_seed
+from .common import ensure_dir, evaluate_policy, get_device, make_env, save_history, save_json, set_seed, register_moving_pad
+
+register_moving_pad()
 
 
 class ActorCriticNet(nn.Module):
@@ -42,6 +44,7 @@ class ActorCriticConfig:
     eval_episodes: int = 5
     device: str = "auto"
     output_dir: str = "outputs/actor_critic"
+    env_id: str = "LunarLander-v3"
 
 
 def discounted_returns(rewards: list[float], gamma: float, device: torch.device) -> torch.Tensor:
@@ -59,7 +62,7 @@ def train(cfg: ActorCriticConfig) -> dict[str, float]:
     set_seed(cfg.seed)
     device = get_device(cfg.device)
     output_dir = ensure_dir(cfg.output_dir)
-    env = make_env(seed=cfg.seed)
+    env = make_env(seed=cfg.seed, env_id=cfg.env_id)
     obs_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
@@ -138,7 +141,7 @@ def train(cfg: ActorCriticConfig) -> dict[str, float]:
             logits, _ = model(obs_tensor)
             return int(torch.argmax(logits, dim=1).item())
 
-    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000)
+    metrics = evaluate_policy(act, cfg.eval_episodes, seed=cfg.seed + 10000, env_id=cfg.env_id)
     save_history(history, output_dir)
     save_json({"algorithm": "Actor-Critic", "config": cfg, "metrics": metrics}, output_dir / "metrics.json")
     print(f"[Actor-Critic] eval mean return: {metrics['mean_return']:.1f}")
@@ -152,6 +155,8 @@ def parse_args() -> ActorCriticConfig:
     parser.add_argument("--seed", type=int, default=ActorCriticConfig.seed)
     parser.add_argument("--device", default=ActorCriticConfig.device)
     parser.add_argument("--output-dir", default=ActorCriticConfig.output_dir)
+    parser.add_argument("--env-id", default=ActorCriticConfig.env_id,
+                        help="环境 id，默认 LunarLander-v3；移动平台用 MovingPadLunarLander-v0")
     args = parser.parse_args()
     return ActorCriticConfig(
         episodes=args.episodes,
@@ -159,6 +164,7 @@ def parse_args() -> ActorCriticConfig:
         seed=args.seed,
         device=args.device,
         output_dir=args.output_dir,
+        env_id=args.env_id,
     )
 
 

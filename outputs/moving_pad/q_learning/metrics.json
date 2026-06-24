@@ -1,0 +1,22 @@
+{
+  "algorithm": "Q-Learning",
+  "config": {
+    "episodes": 1500,
+    "max_steps": 1000,
+    "lr": 0.08,
+    "gamma": 0.99,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay": 0.995,
+    "seed": 42,
+    "eval_episodes": 5,
+    "output_dir": "outputs/moving_pad/q_learning",
+    "env_id": "MovingPadLunarLander-v0"
+  },
+  "metrics": {
+    "mean_return": -434.7763590213391,
+    "std_return": 638.289929701862,
+    "min_return": -1594.5557797359525,
+    "max_return": 249.83367105280672
+  }
+}

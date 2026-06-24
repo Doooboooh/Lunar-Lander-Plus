@@ -1,0 +1,28 @@
+{
+  "algorithm": "PPO",
+  "config": {
+    "updates": 400,
+    "rollout_steps": 2048,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_coef": 0.2,
+    "update_epochs": 4,
+    "minibatch_size": 256,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "cpu",
+    "output_dir": "outputs/moving_pad/moving_pad_ppo",
+    "env_id": "MovingPadLunarLander-v0"
+  },
+  "metrics": {
+    "mean_return": -363.8778066066902,
+    "std_return": 697.4062724714652,
+    "min_return": -1178.485934882794,
+    "max_return": 602.4294257786269
+  }
+}

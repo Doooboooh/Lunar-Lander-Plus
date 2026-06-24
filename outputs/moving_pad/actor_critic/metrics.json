@@ -1,0 +1,23 @@
+{
+  "algorithm": "Actor-Critic",
+  "config": {
+    "episodes": 1000,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.001,
+    "gamma": 0.99,
+    "value_coef": 0.5,
+    "entropy_coef": 0.01,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "cpu",
+    "output_dir": "outputs/moving_pad/actor_critic",
+    "env_id": "MovingPadLunarLander-v0"
+  },
+  "metrics": {
+    "mean_return": -666.7786713960377,
+    "std_return": 485.891346205316,
+    "min_return": -1302.8070989988391,
+    "max_return": -114.74543742895912
+  }
+}

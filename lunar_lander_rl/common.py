@@ -23,9 +23,50 @@ def import_gym() -> Any:
     return gym
 
 
-def make_env(render: bool = False, seed: int | None = None) -> Any:
+def register_moving_pad() -> str:
+    """注册"移动着陆平台"LunarLander 变体环境，返回环境 id。
+
+    幂等：重复调用不会重复注册报错。
+    """
     gym = import_gym()
-    env = gym.make(ENV_ID, render_mode="human" if render else None)
+    env_id = "MovingPadLunarLander-v0"
+    try:
+        gym.register(
+            id=env_id,
+            entry_point="lunar_lander_rl.moving_pad_env:MovingPadLunarLander",
+            max_episode_steps=1000,
+        )
+    except Exception:
+        pass  # 已注册则忽略
+    return env_id
+
+
+# 横风变体的几档强度（wind_power）。gymnasium 默认 wind_power=15.0、turbulence=1.5。
+WIND_LEVELS = {
+    "none": None,                       # 不开风（baseline）
+    "light": dict(enable_wind=True, wind_power=10.0, turbulence_power=0.8),
+    "medium": dict(enable_wind=True, wind_power=15.0, turbulence_power=1.5),   # 默认强度
+    "strong": dict(enable_wind=True, wind_power=25.0, turbulence_power=2.5),
+}
+
+
+def make_wind_env(level: str = "medium", render: bool = False, seed: int | None = None):
+    """创建一个指定风强的 LunarLander-v3。level 见 WIND_LEVELS。"""
+    gym = import_gym()
+    kwargs = WIND_LEVELS.get(level, WIND_LEVELS["medium"])
+    if kwargs is None:
+        env = gym.make("LunarLander-v3", render_mode="human" if render else None)
+    else:
+        env = gym.make("LunarLander-v3", render_mode="human" if render else None, **kwargs)
+    if seed is not None:
+        env.reset(seed=seed)
+        env.action_space.seed(seed)
+    return env
+
+
+def make_env(render: bool = False, seed: int | None = None, env_id: str | None = None) -> Any:
+    gym = import_gym()
+    env = gym.make(env_id or ENV_ID, render_mode="human" if render else None)
     if seed is not None:
         env.reset(seed=seed)
         env.action_space.seed(seed)
@@ -67,8 +108,9 @@ def evaluate_policy(
     max_steps: int = 1000,
     seed: int = 1234,
     render: bool = False,
+    env_id: str | None = None,
 ) -> dict[str, float]:
-    env = make_env(render=render, seed=seed)
+    env = make_env(render=render, seed=seed, env_id=env_id)
     returns: list[float] = []
     try:
         for episode in range(episodes):

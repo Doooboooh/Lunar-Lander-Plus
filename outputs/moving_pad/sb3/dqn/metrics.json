@@ -1,0 +1,6 @@
+{
+  "algorithm": "SB3-dqn",
+  "timesteps": 200000,
+  "eval_mean_return": -196.5859039894305,
+  "eval_std_return": 796.4188743072399
+}

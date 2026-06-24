@@ -1,0 +1,28 @@
+{
+  "algorithm": "DQN",
+  "config": {
+    "episodes": 1000,
+    "max_steps": 1000,
+    "hidden_dim": 128,
+    "lr": 0.001,
+    "gamma": 0.99,
+    "batch_size": 64,
+    "replay_size": 100000,
+    "warmup_steps": 1000,
+    "target_update": 1000,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay_steps": 30000,
+    "seed": 42,
+    "eval_episodes": 5,
+    "device": "cpu",
+    "output_dir": "outputs/moving_pad/moving_pad_dqn",
+    "env_id": "MovingPadLunarLander-v0"
+  },
+  "metrics": {
+    "mean_return": 735.3243348744666,
+    "std_return": 220.46686687378389,
+    "min_return": 456.12349903571544,
+    "max_return": 1126.149447635963
+  }
+}
