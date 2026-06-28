@@ -9,6 +9,8 @@ outputs/*
 reports/*
 !reports/.gitkeep
 
+docs/
+
 *.gif
 *.mp4
 *.pt

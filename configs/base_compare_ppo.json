@@ -1,0 +1,28 @@
+{
+  "name": "base_compare_ppo",
+  "env_id": "BaseLunarLander-v0",
+  "algorithm": "ppo",
+  "seed": 7,
+  "total_timesteps": 1e6,
+  "eval_episodes": 20,
+  "n_envs": 8,
+  "vec_normalize": {
+    "enabled": true,
+    "norm_obs": true,
+    "norm_reward": false,
+    "clip_obs": 10.0
+  },
+  "model_kwargs": {
+    "learning_rate": 0.0003,
+    "n_steps": 1024,
+    "n_epochs": 4,
+    "batch_size": 64,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.01,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "device": "auto"
+  }
+}

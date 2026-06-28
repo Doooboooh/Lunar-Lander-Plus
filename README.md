@@ -81,6 +81,50 @@ python scripts/plot_training.py \
 python scripts/render_env.py --env all --output outputs/obstacle_demo.gif
 ```
 
+渲染已训练好的 Waypoint PPO 模型：
+
+```bash
+python scripts/render_env.py \
+  --env WaypointLunarLander-v0 \
+  --policy model \
+  --algorithm ppo \
+  --model outputs/waypoint_ppo_1m/ppo_WaypointLunarLander-v0.zip \
+  --vec-normalize outputs/waypoint_ppo_1m/vec_normalize.pkl \
+  --output outputs/waypoint_ppo_1m/waypoint_ppo.gif \
+  --steps 1000 \
+  --seed 7
+```
+
+如果想采样随机策略动作而不是 deterministic 动作，可以额外加 `--stochastic`。
+
+## 基础算法对比实验
+
+一键训练并比较 PPO、DQN、A2C 在基础任务 `BaseLunarLander-v0` 上的表现：
+
+```bash
+python scripts/compare_base_algorithms.py
+```
+
+脚本会依次读取：
+
+- `configs/base_compare_ppo.json`
+- `configs/base_compare_dqn.json`
+- `configs/base_compare_a2c.json`
+
+训练输出保存到 `outputs/base_algorithm_comparison/`，汇总结果保存到 `reports/base_algorithm_comparison/`。如果已经训练完成，只想重新生成 CSV、Markdown 和图表：
+
+```bash
+python scripts/compare_base_algorithms.py --skip-train
+```
+
+当前 100k timesteps、20 回合 deterministic evaluation 的一次运行结果：
+
+| Algorithm | Mean reward | Std reward |
+|---|---:|---:|
+| A2C | 45.48 | 68.27 |
+| DQN | -17.97 | 83.78 |
+| PPO | -159.66 | 26.17 |
+
 ## 已注册的任务
 
 | 环境 ID | 说明 |

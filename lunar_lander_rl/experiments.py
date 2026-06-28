@@ -6,7 +6,6 @@ from typing import Any
 import gymnasium as gym
 from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecMonitor, VecNormalize
 
@@ -131,7 +130,7 @@ def train_from_config(config: dict[str, Any], output_dir: str | Path) -> Path:
     if use_vec_normalize:
         env.training = False
         env.norm_reward = False
-    mean_reward, std_reward = evaluate_model(
+    eval_metrics = evaluate_model_detailed(
         model=model,
         env_id=config["env_id"],
         episodes=eval_episodes,
@@ -146,8 +145,7 @@ def train_from_config(config: dict[str, Any], output_dir: str | Path) -> Path:
             "n_envs": n_envs,
             "total_timesteps": int(config["total_timesteps"]),
             "eval_episodes": eval_episodes,
-            "mean_reward": mean_reward,
-            "std_reward": std_reward,
+            **eval_metrics,
             "model_path": str(model_path),
             "vec_normalize_path": str(norm_path) if norm_path is not None else None,
             "monitor_dir": str(monitor_dir),
@@ -175,18 +173,69 @@ def evaluate_model(
     seed: int = 42,
     vec_normalize_path: str | Path | None = None,
 ) -> tuple[float, float]:
+    metrics = evaluate_model_detailed(
+        model=model,
+        env_id=env_id,
+        episodes=episodes,
+        seed=seed,
+        vec_normalize_path=vec_normalize_path,
+    )
+    return metrics["mean_reward"], metrics["std_reward"]
+
+
+def evaluate_model_detailed(
+    *,
+    model: BaseAlgorithm,
+    env_id: str,
+    episodes: int = 10,
+    seed: int = 42,
+    vec_normalize_path: str | Path | None = None,
+) -> dict[str, float]:
     if vec_normalize_path is None:
-        env = make_env(env_id, seed=seed)
+        env = make_vec_env(env_id, seed=seed)
     else:
         raw_env = make_vec_env(env_id, seed=seed)
         env = VecNormalize.load(vec_normalize_path, raw_env)
         env.training = False
         env.norm_reward = False
-    mean_reward, std_reward = evaluate_policy(
-        model,
-        env,
-        n_eval_episodes=episodes,
-        deterministic=True,
-    )
-    env.close()
-    return float(mean_reward), float(std_reward)
+
+    episode_rewards: list[float] = []
+    episode_lengths: list[int] = []
+    completed_waypoints: list[int] = []
+    completed_all_waypoints: list[bool] = []
+    time_limit_truncated: list[bool] = []
+
+    try:
+        for _ in range(episodes):
+            obs = env.reset()
+            total_reward = 0.0
+            length = 0
+            last_info: dict[str, Any] = {}
+            done = False
+            while not done:
+                action, _ = model.predict(obs, deterministic=True)
+                obs, reward, done_arr, infos = env.step(action)
+                total_reward += float(reward[0])
+                length += 1
+                done = bool(done_arr[0])
+                last_info = infos[0]
+
+            episode_rewards.append(total_reward)
+            episode_lengths.append(length)
+            completed_waypoints.append(int(last_info.get("completed_waypoints", last_info.get("active_waypoint", 0))))
+            completed_all_waypoints.append(bool(last_info.get("completed_all_waypoints", False)))
+            time_limit_truncated.append(bool(last_info.get("TimeLimit.truncated", False)))
+    finally:
+        env.close()
+
+    rewards = list(episode_rewards)
+    mean_reward = sum(rewards) / len(rewards) if rewards else 0.0
+    reward_var = sum((reward - mean_reward) ** 2 for reward in rewards) / len(rewards) if rewards else 0.0
+    return {
+        "mean_reward": float(mean_reward),
+        "std_reward": float(reward_var**0.5),
+        "mean_episode_length": float(sum(episode_lengths) / len(episode_lengths)) if episode_lengths else 0.0,
+        "mean_completed_waypoints": float(sum(completed_waypoints) / len(completed_waypoints)) if completed_waypoints else 0.0,
+        "waypoint_success_rate": float(sum(completed_all_waypoints) / len(completed_all_waypoints)) if completed_all_waypoints else 0.0,
+        "time_limit_truncated_rate": float(sum(time_limit_truncated) / len(time_limit_truncated)) if time_limit_truncated else 0.0,
+    }

@@ -29,9 +29,11 @@ class WaypointLunarLanderEnv(gym.Env):
         render_mode: str | None = None,
         continuous: bool = False,
         waypoints: tuple[tuple[float, float], ...] = DEFAULT_WAYPOINTS,
-        waypoint_radius: float = 0.12,
-        waypoint_bonus: float = 35.0,
-        early_landing_penalty: float = -100.0,
+        waypoint_radius: float = 0.18,
+        waypoint_bonus: float = 100.0,
+        waypoint_progress_reward: float = 20.0,
+        incomplete_step_penalty: float = -0.02,
+        early_landing_penalty: float = -300.0,
         **kwargs,
     ):
         self.env = make_base_env(render_mode=render_mode, continuous=continuous, **kwargs)
@@ -40,8 +42,12 @@ class WaypointLunarLanderEnv(gym.Env):
         self.waypoints = tuple(waypoints)
         self.waypoint_radius = float(waypoint_radius)
         self.waypoint_bonus = float(waypoint_bonus)
+        self.waypoint_progress_reward = float(waypoint_progress_reward)
+        self.incomplete_step_penalty = float(incomplete_step_penalty)
         self.early_landing_penalty = float(early_landing_penalty)
         self.active_waypoint = 0
+        self.completed_waypoints = 0
+        self._last_base_obs = None
         self.last_game_over = False
         self._screen = None
         self._clock = None
@@ -63,29 +69,43 @@ class WaypointLunarLanderEnv(gym.Env):
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         obs, info = self.env.reset(seed=seed, options=options)
         self.active_waypoint = 0
+        self.completed_waypoints = 0
+        self._last_base_obs = np.asarray(obs, dtype=np.float32)
         self.last_game_over = False
         return self._augment_observation(obs), info
 
     def step(self, action):
+        previous_distance = self._distance_to_current_waypoint(self._last_base_obs)
         obs, reward, terminated, truncated, info = self.env.step(action)
+        obs = np.asarray(obs, dtype=np.float32)
 
         hit_waypoint = False
         if self.active_waypoint < len(self.waypoints):
             target = np.array(self.waypoints[self.active_waypoint], dtype=np.float32)
-            if np.linalg.norm(obs[:2] - target) <= self.waypoint_radius:
+            current_distance = float(np.linalg.norm(obs[:2] - target))
+            if previous_distance is not None:
+                reward += self.waypoint_progress_reward * (previous_distance - current_distance)
+            reward += self.incomplete_step_penalty
+
+            if current_distance <= self.waypoint_radius:
                 self.active_waypoint += 1
+                self.completed_waypoints = self.active_waypoint
                 hit_waypoint = True
                 reward += self.waypoint_bonus
 
-        if terminated and self.active_waypoint < len(self.waypoints):
-            reward = self.early_landing_penalty
+        completed_all_waypoints = self.active_waypoint >= len(self.waypoints)
+        if (terminated or truncated) and not completed_all_waypoints:
+            reward += self.early_landing_penalty
 
         info = {
             **info,
             "target": self._current_target(),
             "active_waypoint": self.active_waypoint,
+            "completed_waypoints": self.completed_waypoints,
             "hit_waypoint": hit_waypoint,
+            "completed_all_waypoints": completed_all_waypoints,
         }
+        self._last_base_obs = obs
         self.last_game_over = bool(terminated or truncated)
         if self.render_mode == "human":
             self.render()
@@ -119,6 +139,12 @@ class WaypointLunarLanderEnv(gym.Env):
         if self.active_waypoint < len(self.waypoints):
             return self.waypoints[self.active_waypoint]
         return (0.0, 0.0)
+
+    def _distance_to_current_waypoint(self, obs):
+        if obs is None or self.active_waypoint >= len(self.waypoints):
+            return None
+        target = np.array(self.waypoints[self.active_waypoint], dtype=np.float32)
+        return float(np.linalg.norm(np.asarray(obs, dtype=np.float32)[:2] - target))
 
     def _draw_overlays(self, frame):
         for idx, waypoint in enumerate(self.waypoints):
