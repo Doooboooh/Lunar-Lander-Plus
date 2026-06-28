@@ -1,0 +1,24 @@
+{
+  "name": "obstacle_a2c_random",
+  "env_id": "ObstacleLunarLander-v0",
+  "algorithm": "a2c",
+  "seed": 0,
+  "n_envs": 8,
+  "total_timesteps": 1000000,
+  "eval_episodes": 10,
+  "env_kwargs": {"random_obstacles": true},
+  "vec_normalize": {
+    "enabled": true,
+    "norm_obs": true,
+    "norm_reward": true,
+    "clip_obs": 10.0
+  },
+  "model_kwargs": {
+    "learning_rate": 7e-4,
+    "n_steps": 8,
+    "gamma": 0.99,
+    "ent_coef": 0.01,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "obstacle_ppo",
+  "env_id": "ObstacleLunarLander-v0",
+  "algorithm": "ppo",
+  "seed": 0,
+  "n_envs": 8,
+  "total_timesteps": 1000000,
+  "eval_episodes": 10,
+  "env_kwargs": {"random_obstacles": false},
+  "vec_normalize": {
+    "enabled": true,
+    "norm_obs": true,
+    "norm_reward": true,
+    "clip_obs": 10.0
+  },
+  "model_kwargs": {
+    "learning_rate": 0.0003,
+    "n_steps": 1024,
+    "batch_size": 64,
+    "gamma": 0.99
+  }
+}

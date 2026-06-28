@@ -1,11 +1,11 @@
 {
-  "name": "obstacle_dqn",
+  "name": "obstacle_dqn_random",
   "env_id": "ObstacleLunarLander-v0",
   "algorithm": "dqn",
   "seed": 42,
   "total_timesteps": 300000,
   "eval_episodes": 10,
-  "env_kwargs": {"random_obstacles": false},
+  "env_kwargs": {"random_obstacles": true},
   "vec_normalize": {
     "enabled": true,
     "norm_obs": true,

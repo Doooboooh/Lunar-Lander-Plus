@@ -29,9 +29,25 @@ DEFAULT_OBSTACLES = (
     Obstacle(0.62, 0.34, 0.10),
 )
 
+# Obstacle placement / observation config.
+N_OBSTACLES_DEFAULT = len(DEFAULT_OBSTACLES)
+OBSTACLE_RADIUS_DEFAULT = 0.12
+OBSTACLE_X_RANGE = (-1.5, 1.5)
+OBSTACLE_Y_RANGE = (0.3, 1.2)
+OBSTACLE_SAFE_PAD = 0.05  # keep clear of the landing pad column |x| < ~0.3
+OBSTACLE_SAMPLE_TRIES = 50
+EXT_BOUND = 3.0  # bounds for the relative-coord part of the observation
+
 
 class ObstacleLunarLanderEnv(gym.Env):
-    """LunarLander-v3 wrapper that appends obstacle coordinates and penalizes collisions."""
+    """LunarLander-v3 wrapper that appends obstacle coordinates and penalizes collisions.
+
+    Observation: base 8-dim + 3-dim per obstacle (relative x, relative y, radius).
+    Reward shaping: a smooth penalty inside the warning band
+    ``[radius, 2*radius]`` and a large additive penalty + termination on
+    collision. Collisions compare against ``obstacle.radius`` only — the lander
+    is treated as a point mass.
+    """
 
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": FPS}
 
@@ -40,25 +56,43 @@ class ObstacleLunarLanderEnv(gym.Env):
         *,
         render_mode: str | None = None,
         continuous: bool = False,
-        obstacles: tuple[Obstacle, ...] = DEFAULT_OBSTACLES,
-        obstacle_hit_radius: float = 0.08,
+        obstacles: tuple[Obstacle, ...] | None = None,
+        n_obstacles: int = N_OBSTACLES_DEFAULT,
+        obstacle_radius: float = OBSTACLE_RADIUS_DEFAULT,
+        random_obstacles: bool = False,
         collision_penalty: float = -100.0,
+        shaping_coef: float = 0.5,
         **kwargs,
     ):
         self.env = make_base_env(render_mode=render_mode, continuous=continuous, **kwargs)
         self.render_mode = render_mode
         self.action_space = self.env.action_space
-        self.obstacles = tuple(obstacles)
-        self.obstacle_hit_radius = float(obstacle_hit_radius)
+
+        self.random_obstacles = bool(random_obstacles)
+        self.obstacle_radius = float(obstacle_radius)
         self.collision_penalty = float(collision_penalty)
+        self.shaping_coef = float(shaping_coef)
+
+        # The fixed layout is used in non-random mode and as the fallback when
+        # random sampling fails. Its length always equals n_obstacles, which
+        # keeps the observation space dimension-stable (avoids the lc-branch
+        # bug where space and observation could disagree).
+        if obstacles is not None:
+            self._default_obstacles: tuple[Obstacle, ...] = tuple(obstacles)
+        else:
+            self._default_obstacles = self._build_fixed_layout(int(n_obstacles))
+        self.n_obstacles = len(self._default_obstacles)
+        self.obstacles: tuple[Obstacle, ...] = self._default_obstacles
+        self._rng = np.random.default_rng()
+
         self.last_game_over = False
         self._screen = None
         self._clock = None
 
         base_low = self.env.observation_space.low.astype(np.float32)
         base_high = self.env.observation_space.high.astype(np.float32)
-        obs_low = np.tile(np.array([-3.0, -3.0, 0.0], dtype=np.float32), len(self.obstacles))
-        obs_high = np.tile(np.array([3.0, 3.0, 1.0], dtype=np.float32), len(self.obstacles))
+        obs_low = np.tile(np.array([-EXT_BOUND, -EXT_BOUND, 0.0], dtype=np.float32), self.n_obstacles)
+        obs_high = np.tile(np.array([EXT_BOUND, EXT_BOUND, 1.0], dtype=np.float32), self.n_obstacles)
         self.observation_space = spaces.Box(
             np.concatenate([base_low, obs_low]),
             np.concatenate([base_high, obs_high]),
@@ -70,18 +104,22 @@ class ObstacleLunarLanderEnv(gym.Env):
         return self
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
+        if self.random_obstacles:
+            rng = np.random.default_rng(seed) if seed is not None else self._rng
+            self.obstacles = self._sample_obstacles(rng)
+        else:
+            self.obstacles = self._default_obstacles
         obs, info = self.env.reset(seed=seed, options=options)
         self.last_game_over = False
         return self._augment_observation(obs), info
 
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
-        hit_obstacle = self._hit_obstacle(obs)
-        if hit_obstacle:
+        bonus, collided = self._obstacle_bonus(obs)
+        reward = float(reward) + bonus
+        if collided:
             terminated = True
-            reward = self.collision_penalty
-
-        info = {**info, "hit_obstacle": hit_obstacle}
+        info = {**info, "hit_obstacle": bool(collided)}
         self.last_game_over = bool(terminated or truncated)
         if self.render_mode == "human":
             self.render()
@@ -108,16 +146,66 @@ class ObstacleLunarLanderEnv(gym.Env):
         obs = np.asarray(obs, dtype=np.float32)
         obstacle_obs = []
         for obstacle in self.obstacles:
-            obstacle_obs.extend([obstacle.x - obs[0], obstacle.y - obs[1], obstacle.radius])
+            rel_x = float(np.clip(obstacle.x - obs[0], -EXT_BOUND, EXT_BOUND))
+            rel_y = float(np.clip(obstacle.y - obs[1], -EXT_BOUND, EXT_BOUND))
+            obstacle_obs.extend([rel_x, rel_y, obstacle.radius])
         return np.concatenate([obs, np.array(obstacle_obs, dtype=np.float32)]).astype(np.float32)
 
-    def _hit_obstacle(self, obs):
-        pos = np.asarray(obs[:2], dtype=np.float32)
+    def _obstacle_bonus(self, obs):
+        """Return ``(reward_delta, collided)`` for the current lander position."""
+        x, y = float(obs[0]), float(obs[1])
+        total = 0.0
         for obstacle in self.obstacles:
-            center = np.array([obstacle.x, obstacle.y], dtype=np.float32)
-            if np.linalg.norm(pos - center) <= obstacle.radius + self.obstacle_hit_radius:
-                return True
-        return False
+            dist = float(np.hypot(x - obstacle.x, y - obstacle.y))
+            if dist < obstacle.radius:
+                return self.collision_penalty, True
+            if dist < 2.0 * obstacle.radius:
+                total -= self.shaping_coef * (1.0 - dist / (2.0 * obstacle.radius))
+        return total, False
+
+    def _build_fixed_layout(self, n_obstacles: int) -> tuple[Obstacle, ...]:
+        """Deterministic layout of length ``n_obstacles`` for non-random mode."""
+        if n_obstacles == len(DEFAULT_OBSTACLES):
+            return DEFAULT_OBSTACLES
+        rng = np.random.default_rng(2024)
+        placed: list[Obstacle] = []
+        if n_obstacles < len(DEFAULT_OBSTACLES):
+            return DEFAULT_OBSTACLES[:n_obstacles]
+        while len(placed) < n_obstacles:
+            obstacle = self._sample_one(rng, placed)
+            if obstacle is None:
+                break
+            placed.append(obstacle)
+        return tuple(placed) if placed else DEFAULT_OBSTACLES
+
+    def _sample_obstacles(self, rng: np.random.Generator) -> tuple[Obstacle, ...]:
+        """Reject-sample ``n_obstacles`` obstacles; fall back to the fixed layout
+        if any placement fails so the count (and thus obs dim) stays constant."""
+        placed: list[Obstacle] = []
+        for _ in range(self.n_obstacles):
+            obstacle = self._sample_one(rng, placed)
+            if obstacle is None:
+                return self._default_obstacles
+            placed.append(obstacle)
+        return tuple(placed)
+
+    def _sample_one(self, rng: np.random.Generator, placed) -> Obstacle | None:
+        """Sample one obstacle avoiding the pad column and existing obstacles.
+
+        Returns ``None`` after ``OBSTACLE_SAMPLE_TRIES`` failed attempts.
+        """
+        x_lo, x_hi = OBSTACLE_X_RANGE
+        y_lo, y_hi = OBSTACLE_Y_RANGE
+        radius = self.obstacle_radius
+        for _ in range(OBSTACLE_SAMPLE_TRIES):
+            x = float(rng.uniform(x_lo, x_hi))
+            y = float(rng.uniform(y_lo, y_hi))
+            if abs(x) < 0.3 + OBSTACLE_SAFE_PAD and y < 0.4:
+                continue
+            if any(np.hypot(x - p.x, y - p.y) < 3.0 * radius for p in placed):
+                continue
+            return Obstacle(x, y, radius)
+        return None
 
     def _draw_overlays(self, frame):
         for obstacle in self.obstacles:
