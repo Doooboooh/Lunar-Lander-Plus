@@ -49,12 +49,6 @@ python scripts/check_envs.py
 python scripts/train.py --config configs/base_ppo.json --output-dir outputs/base_ppo
 ```
 
-训练 1M 步基础 PPO：
-
-```bash
-python scripts/train.py --config configs/base_ppo_1m.json --output-dir outputs/base_ppo_1m
-```
-
 评估已训练模型：
 
 ```bash
@@ -68,15 +62,15 @@ python scripts/evaluate.py \
 查看训练过程 TensorBoard：
 
 ```bash
-tensorboard --logdir outputs/base_ppo_1m/tensorboard
+tensorboard --logdir outputs/obstacle_ppo_random_3m/tensorboard
 ```
 
 生成训练曲线 PNG：
 
 ```bash
 python scripts/plot_training.py \
-  --monitor outputs/base_ppo_1m/monitor/train.monitor.csv \
-  --output reports/base_ppo_1m_training.png
+  --monitor outputs/obstacle_ppo_random_3m/monitor/train.monitor.csv \
+  --output reports/obstacle_ppo_random_3m.png
 ```
 
 渲染自定义环境 GIF：

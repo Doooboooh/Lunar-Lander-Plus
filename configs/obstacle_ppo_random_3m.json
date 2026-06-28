@@ -1,12 +1,12 @@
 {
-  "name": "obstacle_ppo_random",
+  "name": "obstacle_ppo_random_3m",
   "env_id": "ObstacleLunarLander-v0",
   "algorithm": "ppo",
   "seed": 0,
   "n_envs": 8,
-  "total_timesteps": 1000000,
-  "eval_episodes": 10,
-  "env_kwargs": {"random_obstacles": true},
+  "total_timesteps": 3000000,
+  "eval_episodes": 100,
+  "env_kwargs": {"random_obstacles": true, "n_obstacles": 1},
   "vec_normalize": {
     "enabled": true,
     "norm_obs": true,

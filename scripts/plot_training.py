@@ -36,8 +36,8 @@ def load_monitor_csv(path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--monitor", default="outputs/base_ppo_1m/monitor/train.monitor.csv")
-    parser.add_argument("--output", default="reports/base_ppo_1m_training.png")
+    parser.add_argument("--monitor", default="outputs/obstacle_ppo_random_3m/monitor/train.monitor.csv")
+    parser.add_argument("--output", default="reports/obstacle_ppo_random_3m.png")
     parser.add_argument("--window", type=int, default=20)
     args = parser.parse_args()
 

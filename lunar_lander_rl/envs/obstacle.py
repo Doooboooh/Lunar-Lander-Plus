@@ -32,9 +32,12 @@ DEFAULT_OBSTACLES = (
 # Obstacle placement / observation config.
 N_OBSTACLES_DEFAULT = len(DEFAULT_OBSTACLES)
 OBSTACLE_RADIUS_DEFAULT = 0.12
-OBSTACLE_X_RANGE = (-1.5, 1.5)
-OBSTACLE_Y_RANGE = (0.3, 1.2)
-OBSTACLE_SAFE_PAD = 0.05  # keep clear of the landing pad column |x| < ~0.3
+# The lander spawns centered at the top (0, ~1.4) and the helipad (the "landing
+# zone") sits at (0, 0), spanning obs-x [-0.2, 0.2]. With random_obstacles each
+# obstacle is placed inside the landing zone's x-extent, at an altitude above
+# the pad, so it blocks the direct descent (the lander must detour around it).
+OBSTACLE_LANDING_X_RANGE = (-0.2, 0.2)  # helipad obs-x extent (the landing zone)
+OBSTACLE_Y_RANGE = (0.4, 1.2)           # altitude band above the pad surface (y=0)
 OBSTACLE_SAMPLE_TRIES = 50
 EXT_BOUND = 3.0  # bounds for the relative-coord part of the observation
 
@@ -190,18 +193,22 @@ class ObstacleLunarLanderEnv(gym.Env):
         return tuple(placed)
 
     def _sample_one(self, rng: np.random.Generator, placed) -> Obstacle | None:
-        """Sample one obstacle avoiding the pad column and existing obstacles.
+        """Sample one obstacle inside the landing zone, above the pad.
+
+        ``x`` is uniform over the helipad's obs-x extent
+        (``OBSTACLE_LANDING_X_RANGE``) and ``y`` is uniform over the altitude
+        band above the pad (``OBSTACLE_Y_RANGE``), so each obstacle sits in the
+        column directly above the landing zone and blocks the direct descent.
+        Samples that overlap an existing obstacle are rejected.
 
         Returns ``None`` after ``OBSTACLE_SAMPLE_TRIES`` failed attempts.
         """
-        x_lo, x_hi = OBSTACLE_X_RANGE
+        x_lo, x_hi = OBSTACLE_LANDING_X_RANGE
         y_lo, y_hi = OBSTACLE_Y_RANGE
         radius = self.obstacle_radius
         for _ in range(OBSTACLE_SAMPLE_TRIES):
             x = float(rng.uniform(x_lo, x_hi))
             y = float(rng.uniform(y_lo, y_hi))
-            if abs(x) < 0.3 + OBSTACLE_SAFE_PAD and y < 0.4:
-                continue
             if any(np.hypot(x - p.x, y - p.y) < 3.0 * radius for p in placed):
                 continue
             return Obstacle(x, y, radius)

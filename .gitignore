@@ -8,6 +8,7 @@ outputs/*
 !outputs/.gitkeep
 reports/*
 !reports/.gitkeep
+logs/
 
 *.gif
 *.mp4
