@@ -49,7 +49,7 @@ def render_episode(env_id, output, steps, seed, policy):
 
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    imageio.mimsave(output, frames, fps=30)
+    imageio.mimsave(output, frames, fps=30, loop=0)
     print(f"{env_id}: episode return {total_reward:.1f}")
     print(f"saved GIF to {output}")
 

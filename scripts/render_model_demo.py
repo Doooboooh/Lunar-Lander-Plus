@@ -104,7 +104,7 @@ def main():
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
-    imageio.mimsave(out, frames, fps=args.fps)
+    imageio.mimsave(out, frames, fps=args.fps, loop=0)
     if args.frame_png:
         imageio.imwrite(args.frame_png, frames[0])
     hit = bool(infos[0].get("hit_obstacle"))
